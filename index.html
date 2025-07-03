@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title  >Ultimate Tic Tac Toe</title>
+  <link rel="stylesheet" href="style.css">
+
+  <link rel="icon" type="image/png" href="t3.jpg" />
+</head>
+<body>
+
+<!-- Splash Screen -->
+<div id="splash-screen">
+
+  <h1 style="color: #00ffff;">🎮  🎮 🎮  🎮  🎮  🎮  🎮  🎮  🎮  🎮</h1>
+  <h1 style="color: #00ffff;">🎮 Welcome to Tic Tac Toe 🎮</h1>
+  <h1 style="color: #00ffff;">🎮  🎮 🎮  🎮  🎮  🎮  🎮  🎮  🎮  🎮</h1>
+
+  </div>
+
+<!-- Splash / Intro -->
+<div id="intro-screen">
+  <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>
+
+  
+  <div class="input-group">
+    <label style="color: white;">Player 1 Name:</label>
+    <input id="playerXName" type="text" placeholder="name" style="color: white; background-color: #333;" />
+    
+    <label>Emoji / Avatar:</label>
+    <input id="playerXEmoji" maxlength="2" value="😀">
+  </div>
+
+  <div class="input-group">
+    <label style="color: white;">Player 2 Name:</label>
+    <input id="playerXName" type="text" placeholder="name" style="color: white; background-color: #333;" />
+    
+    <label>Emoji / Avatar:</label>
+    <input id="playerOEmoji" maxlength="2" value="🤖">
+  </div>
+
+  <label>Select Theme:</label>
+  <select id="themeSelector">
+    <option value="classic">Classic</option>
+    <option value="neon">Neon</option>
+    <option value="wood">Wood</option>
+      <option value="clear">Clear</option> <!-- NEW -->
+    </select>
+    
+  </select>
+
+  <label>Select Mode:</label>
+  <select id="gameMode">
+    <option value="PvP">Player vs Player</option>
+    <option value="Easy">Player vs Easy AI</option>
+    <option value="Hard">Player vs Hard AI</option>
+  </select>
+
+  <button onclick="startGame()">▶ Start Game</button>
+</div>
+
+<!-- Game Section -->
+<div id="game-section" style="display:none;">
+  <h2 id="status">Player's Turn</h2>
+  <div id="timer">⏱️ 10</div>
+  <div id="board"></div>
+
+  <div class="controls">
+    <button onclick="pauseGame()">⏸ Pause</button>
+    <button onclick="resumeGame()">▶ Resume</button>
+    <button onclick="resetGame()">🔁 Reset</button>
+    <button onclick="goHome()">🏠 Home</button>
+    <button onclick="openSettings()">⚙ Settings</button>
+  </div>
+
+  <div id="dashboard">
+    <h3>🏆 Leaderboard (Top 5)</h3>
+    <ol id="leaderboardList"></ol>
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div id="settings-panel" style="display:none;">
+  <h3>⚙ Game Settings</h3>
+  <label><input type="checkbox" id="soundToggle" checked> 🔊 Sound On</label><br>
+  <label><input type="checkbox" id="themeToggle"> 🌙 Dark Mode</label><br>
+  <button onclick="resetStats()">🧹 Reset Stats</button>
+  <button onclick="closeSettings()">❌ Close Settings</button>
+</div>
+
+<!-- Sounds -->
+<audio id="clickSound" src="https://www.fesliyanstudios.com/play-mp3/387"></audio>
+<audio id="winSound" src="https://www.fesliyanstudios.com/play-mp3/438"></audio>
+<audio id="drawSound" src="https://www.fesliyanstudios.com/play-mp3/412"></audio>
+
+<!-- Confetti -->
+<canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+
+<script src="game.js" defer></script>
+</body>
+</html>
