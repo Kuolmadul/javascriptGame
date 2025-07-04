@@ -15,11 +15,11 @@ const winningCombos = [
 ];
 
 function startGame() {
-  const form = document.getElementById("gameForm");
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
+  // const form = document.getElementById("gameForm");
+  // if (!form.checkValidity()) {
+  //   form.reportValidity();
+  //   return;
+  // }
   currentPlayer = "X";
   gameActive = true;
   mode = document.getElementById("gameMode").value;
