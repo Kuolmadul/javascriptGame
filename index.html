@@ -3,67 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title  >Ultimate Tic Tac Toe</title>
+  <title>Ultimate Tic Tac Toe</title>
   <link rel="stylesheet" href="style.css">
-
-  <link rel="icon" type="image/png" href="t3.jpg" />
+  <link rel="icon" href="t3.jpg" />
 </head>
 <body>
-
 
 <!-- Splash Screen -->
 <div id="splash-screen">
   <video id="splash-video" autoplay muted playsinline>
     <source src="ticanimation.mp4" type="video/mp4" />
-    Your browser does not support the video tag.
   </video>
-  <div class="overlay">
-    <h1>🎮 Welcome to Tic Tac Toe 🎮</h1>
-  </div>
+  <div class="overlay"><h1>🎮 Welcome to Tic Tac Toe 🎮</h1></div>
 </div>
 
-
-<!-- Splash / Intro -->
-<div id="intro-screen">
+<!-- Intro Screen -->
+<div id="intro-screen" class="screen active">
   <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>
 
-  
   <div class="input-group">
-      <label for="playerXName">Player 1 Name:</label>
-      <input type="text" id="playerXName" placeholder="Player 1">
-      <label for="playerXEmoji">Emoji / Avatar:</label>
-      <select id="playerXEmoji">
-        <option value="❌">❌</option>
-        <option value="😀">😀</option>
-        <option value="🤖">🤖</option>
-        <option value="⭐">⭐</option>
-  
-        
-        
-      </select>
-    </div>
+    <label style="color: white;">Player 1 Name:</label>
+    <input id="playerXName" type="text" placeholder="name" />
+    <label>Emoji / Avatar:</label>
+    <input id="playerXEmoji" maxlength="2" value="😀">
+  </div>
 
   <div class="input-group">
-      <label for="playerOName">Player 2 Name:</label>
-      <input type="text" id="playerOName" placeholder="Player 2">
-      <label for="playerOEmoji">Emoji / Avatar:</label>
-      <select id="playerOEmoji">
-        <option value="⭕️">⭕️</option>
-        <option value="😎">😎</option>
-        <option value="🐱">🐱</option>
-        <option value="🚀">🚀</option>
-        <option value="🌟">🌟</option>
-      </select>
-    </div>
+    <label style="color: white;">Player 2 Name:</label>
+    <input id="playerOName" type="text" placeholder="name" />
+    <label>Emoji / Avatar:</label>
+    <input id="playerOEmoji" maxlength="2" value="🤖">
+  </div>
 
   <label>Select Theme:</label>
   <select id="themeSelector">
     <option value="classic">Classic</option>
     <option value="neon">Neon</option>
     <option value="wood">Wood</option>
-      <option value="clear">Clear</option> <!-- NEW -->
-    </select>
-    
+    <option value="clear">Clear</option>
   </select>
 
   <label>Select Mode:</label>
@@ -73,11 +50,15 @@
     <option value="Hard">Player vs Hard AI</option>
   </select>
 
-  <button onclick="startGame()">▶ Start Game</button>
+  <div style="margin-top: 15px;">
+    <button onclick="startGame()">▶ Start Game</button>
+    <button onclick="showHowToPlay()">📘 How to Play</button>
+    <button onclick="showLeaderboard()">🏆 Leaderboard</button>
+  </div>
 </div>
 
 <!-- Game Section -->
-<div id="game-section" style="display:none;">
+<div id="game-section" class="screen">
   <h2 id="status">Player's Turn</h2>
   <div id="timer">⏱️ 10</div>
   <div id="board"></div>
@@ -96,8 +77,32 @@
   </div>
 </div>
 
+<!-- How to Play -->
+<div id="howto-screen" class="screen">
+  <h2>📘 How to Play</h2>
+  <p>Take turns placing your emoji in the grid. Get 3 in a row to win!</p>
+  <p>You can play against a friend or AI with easy or hard mode.</p>
+  <p>Use settings to switch themes or toggle sound.</p>
+  <button onclick="goHome()">🏠 Home</button>
+</div>
+
+<!-- Leaderboard Screen -->
+<div id="leaderboard-screen" class="screen">
+  <h2>🏆 Top Players</h2>
+  <ol id="leaderboardListPage"></ol>
+  <button onclick="goHome()">🏠 Home</button>
+</div>
+
+<!-- Pause Screen -->
+<div id="pause-screen" class="screen">
+  <h2>⏸ Game Paused</h2>
+  <button onclick="resumeGame()">▶ Resume</button>
+  <button onclick="resetGame()">🔁 Restart</button>
+  <button onclick="goHome()">🏠 Home</button>
+</div>
+
 <!-- Settings Panel -->
-<div id="settings-panel" style="display:none;">
+<div id="settings-panel" style="display: none;">
   <h3>⚙ Game Settings</h3>
   <label><input type="checkbox" id="soundToggle" checked> 🔊 Sound On</label><br>
   <label><input type="checkbox" id="themeToggle"> 🌙 Dark Mode</label><br>

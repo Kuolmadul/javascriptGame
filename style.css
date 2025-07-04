@@ -1,285 +1,77 @@
+/* === Global Styles === */
 body {
-    font-family: 'Segoe UI', sans-serif;
-    text-align: center;
-    background: url("t3.jpg") center center no-repeat;   
-    margin: 0;
-    padding: 20px;
-    background-size: cover;
-  }
-  
-
-  #intro-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh; /* Full height of viewport */
-    text-align: center;
-    padding: 20px;
-  }
-  
-
-#intro-screen {
-  display: none;
-  transition: opacity 0.5s ease-in-out;
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  background: url("t3.jpg") center center no-repeat;
+  background-size: cover;
+  margin: 0;
+  padding: 20px;
+  color: black;
 }
 
-#splash-screen {
-  transition: opacity 1s ease;
+body.dark {
+  background: #1e1e1e;
+  color: white;
 }
 
+body.dark input, body.dark select {
+  background: #333;
+  color: white;
+}
 
-  .classic .cell {
-    background-color: #fff;
-    color: #000;
-    border: 2px solid black;
-  }
-  
-  .neon .cell {
-    background-color: #0ff;
-    color: #000;
-    border: 2px solid #00f;
-  }
-  
-  .wood .cell {
-    background-image: url('assets/wood-texture.jpg');
-    background-size: cover;
-    color: #000;
-    border: 2px solid #654321;
-  }
-  
-  .clear .cell {
-    background-color: transparent;
-    color: #000;
-    border: 2px solid black;
-  }
-  
-  .clear .cell {
-    background-color: transparent;
-    color: black;
-    border: 2px solid black;
-  }
-  .clear {
-    background-color: transparent;
-  }
-    
+body.dark button {
+  background: #444;
+}
 
+/* === Title === */
+h1, h2, h3 {
+  margin: 0.5em 0;
+}
 
-
-  body {
-    background-image: url('t3.jpg'); /* Replace with your actual image path */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    height: 100vh; /* Full height of viewport */
-    margin: 0;
-  }
-  
-
-  title{
-
-color: #fff;
-
-  }
-
-  h1, h2, h3 {
-    margin: 0.5em 0;
-  }
-  
-  input, select, button {
-    padding: 8px;
-    margin: 5px;
-    font-size: 1em;
-    border-radius: 5px;
-  }
-  
-  button {
-    background-color: #333;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1em;
-    border-radius: 8px;
-    transition: background-color 0.3s, box-shadow 0.3s;
-    cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: yellow;
-    color: black;
-    box-shadow: 0 0 12px 4px blue;
-  }
-  
-  
-  
+input, select, button {
+  padding: 8px;
+  margin: 5px;
+  font-size: 1em;
+  border-radius: 5px;
+}
 
 button {
+  background-color: #f07b1c;
+  color: white;
+  border: none;
   padding: 10px 20px;
   font-size: 1em;
-  color: white;
-  background-color: #f07b1c; /* Default green */
-  border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 button:hover {
-  background-color: #00bfff; /* Luminous blue */
-  color: white;
+  background-color: yellow;
+  color: black;
   transform: scale(1.05);
-  box-shadow: 0 0 15px #2c1102;
+  box-shadow: 0 0 12px 4px blue;
 }
 
+/* === Screens === */
+.screen {
+  display: none;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
+#intro-screen.active,
+#game-section.active,
+#howto-screen.active,
+#leaderboard-screen.active,
+#pause-screen.active {
+  display: flex;
+}
 
-
-
-  /* button {
-    color: white;
-    background-color: royalblue;
-  }
-  
-  button:hover {
-    background-color: dodgerblue;
-    color: #fff;
-  } */
-  
-
-
-
-  /*button {
-    cursor: pointer;
-    border: none;
-    background: #2e8b57;
-    color: white;
-    transition: background 0.2s;
-  }
-  
-  button:hover {
-    background: #246a45;
-  }
-  */
-  #board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-gap: 8px;
-    justify-content: center;
-    margin: 20px auto;
-  }
-  
-  .cell {
-    width: 100px;
-    height: 100px;
-    font-size: 2em;
-    background: white;
-    border: 3px solid black;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-  }
-  
-  #dashboard {
-    margin-top: 20px;
-  }
-  
-  #status {
-    font-size: 1.2em;
-    margin: 10px 0;
-  }
-  
-  #timer {
-    font-size: 1.2em;
-    color: #d9534f;
-  }
-  
-  .input-group {
-    margin-bottom: 10px;
-  }
-  
-  .controls button {
-    margin: 5px;
-  }
-  
-  /* Themes */
-  .theme-classic .cell {
-    background: white;
-    color: black;
-  }
-  
-  .theme-neon .cell {
-    background: black;
-    color: lime;
-    border-color: cyan;
-  }
-  
-  .theme-wood .cell {
-    background: #deb887;
-    color: #4b2e14;
-    border-color: #8b5e3c;
-  }
-  
-  /* Dark Mode */
-  body.dark {
-    background: #1e1e1e;
-    color: white;
-  }
-  
-  body.dark input, body.dark select {
-    background: #333;
-    color: white;
-  }
-  
-  body.dark button {
-    background: #444;
-  }
-  
-  /* Confetti Canvas */
-  #confetti-canvas {
-    z-index: 9999;
-  }
-  
-  /* Settings Panel */
-  #settings-panel {
-    position: fixed;
-    top: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #fff;
-    padding: 20px;
-    border: 2px solid black;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    z-index: 999;
-  }
-  
-  body.dark #settings-panel {
-    background: #333;
-    color: white;
-    border-color: white;
-  }
-
-  
-  /* #splash-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url("ticanimation.mp4") center center no-repeat;
-    background-size: cover;
-    color: white;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 2.5em;
-    text-shadow: 2px 2px 8px black;
-    transition: opacity 1s ease-out;
-  } */
-   #splash-screen {
+/* === Splash Screen === */
+#splash-screen {
   position: fixed;
   inset: 0;
   width: 100%;
@@ -308,5 +100,102 @@ button:hover {
   text-align: center;
 }
 
+/* === Board === */
+#board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-gap: 8px;
+  justify-content: center;
+  margin: 20px auto;
+  background-image: url('classic.jpg.jpeg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  padding: 10px;
+}
 
-  
+.cell {
+  width: 100px;
+  height: 100px;
+  font-size: 2.5em;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  color: black;
+}
+
+/* === Themes === */
+.theme-classic #board {
+  background-image: url('classic.jpg.jpeg');
+}
+.theme-neon #board {
+  background-image: url('neon.jpg.jpeg');
+}
+.theme-wood #board {
+  background-image: url('wood.jpg.jpeg');
+}
+.theme-clear #board {
+  background-image: none;
+  background-color: transparent;
+}
+
+/* === Dark Enhancements === */
+body.dark #board {
+  border: 2px solid white;
+}
+body.dark .cell {
+  border-color: #aaa;
+  color: white;
+  text-shadow: 1px 1px 2px black;
+}
+
+/* === Status, Timer, Dashboard === */
+#status {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+#timer {
+  font-size: 1.2em;
+  color: #d9534f;
+}
+
+#dashboard {
+  margin-top: 20px;
+}
+
+.input-group {
+  margin-bottom: 10px;
+}
+
+.controls button {
+  margin: 5px;
+}
+
+/* === Confetti Canvas === */
+#confetti-canvas {
+  z-index: 9999;
+}
+
+/* === Settings Panel === */
+#settings-panel {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 20px;
+  border: 2px solid black;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+body.dark #settings-panel {
+  background: #333;
+  color: white;
+  border-color: white;
+}

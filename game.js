@@ -20,12 +20,10 @@ function startGame() {
   mode = document.getElementById("gameMode").value;
   boardTheme = document.getElementById("themeSelector").value;
 
-  document.getElementById("intro-screen").style.display = "none";
-  document.getElementById("game-section").style.display = "block";
-
-  document.body.classList.remove("theme-classic", "theme-neon", "theme-wood");
+  document.body.classList.remove("theme-classic", "theme-neon", "theme-wood", "theme-clear");
   document.body.classList.add(`theme-${boardTheme}`);
 
+  showScreen("game-section");
   resetGame();
   updateLeaderboard();
 }
@@ -44,7 +42,6 @@ function createBoard() {
 
 function handleClick(e) {
   if (!gameActive || gamePaused) return;
-
   const cell = e.target;
   const index = parseInt(cell.dataset.index);
   if (cell.textContent !== "") return;
@@ -60,7 +57,7 @@ function handleClick(e) {
     triggerConfetti();
     updateStatus(`${getName(currentPlayer)} wins! 🎉`);
     updateLeaderboardData(getName(currentPlayer));
-    setTimeout(resetGame, 2500); // ✅ Auto reset
+    showScreen("game-over");
     return;
   }
 
@@ -68,7 +65,7 @@ function handleClick(e) {
     gameActive = false;
     playSound("draw");
     updateStatus("It's a draw! 🤝");
-    setTimeout(resetGame, 2500); // ✅ Auto reset
+    showScreen("game-over");
     return;
   }
 
@@ -77,18 +74,16 @@ function handleClick(e) {
   restartTimer();
 
   if ((mode === "Easy" || mode === "Hard") && currentPlayer === "O") {
-    setTimeout(() => {
-      aiMove();
-    }, 500);
+    setTimeout(aiMove, 500);
   }
 }
 
 function aiMove() {
   let bestIndex;
+  const empty = [...document.querySelectorAll(".cell")].filter(c => c.textContent === "");
+  if (empty.length === 0) return;
 
   if (mode === "Easy") {
-    const empty = [...document.querySelectorAll(".cell")].filter(c => c.textContent === "");
-    if (empty.length === 0) return;
     bestIndex = empty[Math.floor(Math.random() * empty.length)].dataset.index;
   } else {
     bestIndex = getBestMove();
@@ -96,7 +91,6 @@ function aiMove() {
 
   const cell = document.querySelector(`.cell[data-index='${bestIndex}']`);
   handleClick({ target: cell });
-  restartTimer(); // ✅ Sync timer with AI
 }
 
 function getBestMove() {
@@ -106,7 +100,7 @@ function getBestMove() {
 }
 
 function minimax(board, player) {
-  const avail = board.map((v,i) => v === "" ? i : null).filter(v => v !== null);
+  const avail = board.map((v, i) => v === "" ? i : null).filter(v => v !== null);
   if (checkMiniWin(board, "X")) return { score: -10 };
   if (checkMiniWin(board, "O")) return { score: 10 };
   if (avail.length === 0) return { score: 0 };
@@ -115,7 +109,7 @@ function minimax(board, player) {
   for (let i of avail) {
     const move = { index: i };
     board[i] = player;
-    move.score = player === "O" ? minimax(board, "X").score : minimax(board, "O").score;
+    move.score = (player === "O" ? minimax(board, "X") : minimax(board, "O")).score;
     board[i] = "";
     moves.push(move);
   }
@@ -159,19 +153,19 @@ function resetGame() {
 }
 
 function goHome() {
-  document.getElementById("intro-screen").style.display = "block";
-  document.getElementById("game-section").style.display = "none";
+  showScreen("intro-screen");
   clearTimeout(timer);
 }
 
 function pauseGame() {
   gamePaused = true;
   clearTimeout(timer);
-  updateStatus("⏸ Paused");
+  showScreen("pause-menu");
 }
 
 function resumeGame() {
   gamePaused = false;
+  showScreen("game-section");
   updateStatus(`${getName(currentPlayer)}'s Turn`);
   restartTimer();
 }
@@ -190,6 +184,9 @@ function countdown() {
     currentPlayer = currentPlayer === "X" ? "O" : "X";
     updateStatus(`${getName(currentPlayer)}'s Turn (Auto Skipped)`);
     restartTimer();
+    if ((mode === "Easy" || mode === "Hard") && currentPlayer === "O") {
+      setTimeout(aiMove, 500);
+    }
     return;
   }
   timeLeft--;
@@ -218,14 +215,6 @@ function closeSettings() {
   document.getElementById("settings-panel").style.display = "none";
 }
 
-document.getElementById("soundToggle").addEventListener("change", e => {
-  soundOn = e.target.checked;
-});
-
-document.getElementById("themeToggle").addEventListener("change", e => {
-  document.body.classList.toggle("dark", e.target.checked);
-});
-
 function resetStats() {
   if (confirm("Reset all data?")) {
     localStorage.clear();
@@ -234,6 +223,14 @@ function resetStats() {
     goHome();
   }
 }
+
+document.getElementById("soundToggle").addEventListener("change", e => {
+  soundOn = e.target.checked;
+});
+
+document.getElementById("themeToggle").addEventListener("change", e => {
+  document.body.classList.toggle("dark", e.target.checked);
+});
 
 function updateLeaderboardData(winner) {
   if (!winner) return;
@@ -244,7 +241,7 @@ function updateLeaderboardData(winner) {
     else acc.push(item);
     return acc;
   }, []);
-  leaderboard.sort((a,b) => b.score - a.score);
+  leaderboard.sort((a, b) => b.score - a.score);
   leaderboard = leaderboard.slice(0, 5);
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
   updateLeaderboard();
@@ -252,12 +249,15 @@ function updateLeaderboardData(winner) {
 
 function updateLeaderboard() {
   const list = document.getElementById("leaderboardList");
-  if (!list) return;
-  list.innerHTML = "";
-  leaderboard.forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = `${p.name}: ${p.score}`;
-    list.appendChild(li);
+  const screenList = document.getElementById("leaderboardScreenList");
+  [list, screenList].forEach(l => {
+    if (!l) return;
+    l.innerHTML = "";
+    leaderboard.forEach(p => {
+      const li = document.createElement("li");
+      li.textContent = `${p.name}: ${p.score}`;
+      l.appendChild(li);
+    });
   });
 }
 
@@ -306,8 +306,8 @@ function clearConfetti() {
   ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
 }
 
-// ✅ Single Splash Transition Handler
-document.addEventListener("DOMContentLoaded", () => {
+// Splash → Intro
+window.addEventListener("load", () => {
   const splash = document.getElementById("splash-screen");
   const intro = document.getElementById("intro-screen");
   const video = document.getElementById("splash-video");
@@ -320,9 +320,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
   }
 
-  if (video) {
-    video.addEventListener("ended", goToIntroScreen);
-  }
-
-  setTimeout(goToIntroScreen, 7000); // fallback if video doesn't end
+  if (video) video.addEventListener("ended", goToIntroScreen);
+  setTimeout(goToIntroScreen, 7000);
 });
+
+// ✅ Screen switching utility
+function showScreen(id) {
+  const screens = [
+    "intro-screen",
+    "game-section",
+    "settings-panel",
+    "game-over",
+    "pause-menu",
+    "how-to-play",
+    "leaderboard-screen"
+  ];
+  screens.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.style.display = s === id ? "block" : "none";
+  });
+}
