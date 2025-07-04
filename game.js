@@ -44,6 +44,7 @@ function createBoard() {
 
 function handleClick(e) {
   if (!gameActive || gamePaused) return;
+
   const cell = e.target;
   const index = parseInt(cell.dataset.index);
   if (cell.textContent !== "") return;
@@ -59,6 +60,7 @@ function handleClick(e) {
     triggerConfetti();
     updateStatus(`${getName(currentPlayer)} wins! 🎉`);
     updateLeaderboardData(getName(currentPlayer));
+    setTimeout(resetGame, 2500); // ✅ Auto reset
     return;
   }
 
@@ -66,6 +68,7 @@ function handleClick(e) {
     gameActive = false;
     playSound("draw");
     updateStatus("It's a draw! 🤝");
+    setTimeout(resetGame, 2500); // ✅ Auto reset
     return;
   }
 
@@ -73,7 +76,7 @@ function handleClick(e) {
   updateStatus(`${getName(currentPlayer)}'s Turn`);
   restartTimer();
 
-  if (mode.includes("AI") && currentPlayer === "O") {
+  if ((mode === "Easy" || mode === "Hard") && currentPlayer === "O") {
     setTimeout(() => {
       aiMove();
     }, 500);
@@ -85,6 +88,7 @@ function aiMove() {
 
   if (mode === "Easy") {
     const empty = [...document.querySelectorAll(".cell")].filter(c => c.textContent === "");
+    if (empty.length === 0) return;
     bestIndex = empty[Math.floor(Math.random() * empty.length)].dataset.index;
   } else {
     bestIndex = getBestMove();
@@ -92,6 +96,7 @@ function aiMove() {
 
   const cell = document.querySelector(`.cell[data-index='${bestIndex}']`);
   handleClick({ target: cell });
+  restartTimer(); // ✅ Sync timer with AI
 }
 
 function getBestMove() {
@@ -151,9 +156,6 @@ function resetGame() {
   updateStatus(`${getName("X")}'s Turn`);
   restartTimer();
   clearConfetti();
-
-  
-
 }
 
 function goHome() {
@@ -304,34 +306,23 @@ function clearConfetti() {
   ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
 }
 
+// ✅ Single Splash Transition Handler
+document.addEventListener("DOMContentLoaded", () => {
+  const splash = document.getElementById("splash-screen");
+  const intro = document.getElementById("intro-screen");
+  const video = document.getElementById("splash-video");
 
-// Splash Screen Hide after 2.5 seconds
-window.addEventListener("load", () => {
+  function goToIntroScreen() {
+    splash.style.opacity = 0;
     setTimeout(() => {
-      const splash = document.getElementById("splash-screen");
-      splash.style.opacity = 0;
-      setTimeout(() => splash.style.display = "none", 1000);
-    }, 10000);
-  });
+      splash.style.display = "none";
+      intro.style.display = "block";
+    }, 1000);
+  }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const splash = document.getElementById("splash-screen");
-    const video = document.getElementById("splash-video");
+  if (video) {
+    video.addEventListener("ended", goToIntroScreen);
+  }
 
-    // Auto-remove splash screen when video ends
-    video.addEventListener("ended", () => {
-      splash.style.opacity = 0;
-      setTimeout(() => splash.style.display = "none", 1000);
-      document.getElementById("setupScreen").classList.add("active");
-    });
-
-    // OPTIONAL fallback: auto-skip after 6s
-    setTimeout(() => {
-      if (splash.style.display !== "none") {
-        splash.style.opacity = 0;
-        setTimeout(() => splash.style.display = "none", 1000);
-        document.getElementById("setupScreen").classList.add("active");
-      }
-    }, 6000);
-  });
-
+  setTimeout(goToIntroScreen, 7000); // fallback if video doesn't end
+});
