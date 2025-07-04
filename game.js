@@ -311,6 +311,27 @@ window.addEventListener("load", () => {
       const splash = document.getElementById("splash-screen");
       splash.style.opacity = 0;
       setTimeout(() => splash.style.display = "none", 1000);
-    }, 2500);
+    }, 10000);
   });
-  
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const splash = document.getElementById("splash-screen");
+    const video = document.getElementById("splash-video");
+
+    // Auto-remove splash screen when video ends
+    video.addEventListener("ended", () => {
+      splash.style.opacity = 0;
+      setTimeout(() => splash.style.display = "none", 1000);
+      document.getElementById("setupScreen").classList.add("active");
+    });
+
+    // OPTIONAL fallback: auto-skip after 6s
+    setTimeout(() => {
+      if (splash.style.display !== "none") {
+        splash.style.opacity = 0;
+        setTimeout(() => splash.style.display = "none", 1000);
+        document.getElementById("setupScreen").classList.add("active");
+      }
+    }, 6000);
+  });
+
