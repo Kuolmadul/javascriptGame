@@ -311,11 +311,39 @@ function clearConfetti() {
   ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
 }
 
-// Splash → Intro
-window.addEventListener("load", () => {
+// // Splash → Intro
+// window.addEventListener("load", () => {
+//   const splash = document.getElementById("splash-screen");
+//   const intro = document.getElementById("intro-screen");
+//   const video = document.getElementById("splash-video");
+
+//   function goToIntroScreen() {
+//     splash.style.opacity = 0;
+//     setTimeout(() => {
+//       splash.style.display = "none";
+//       intro.style.display = "block";
+//     }, 1000);
+//   }
+
+//   if (video) video.addEventListener("ended", goToIntroScreen);
+//   setTimeout(goToIntroScreen, 7000);
+// });
+// game.js
+document.addEventListener("DOMContentLoaded", () => {
   const splash = document.getElementById("splash-screen");
   const intro = document.getElementById("intro-screen");
   const video = document.getElementById("splash-video");
+  const typewriter = document.getElementById("typewriter");
+  const textToType = "🎮 Welcome to Tic Tac Toe 🎮";
+  let typeIndex = 0;
+
+  function typeWriter() {
+    if (typeIndex < textToType.length) {
+      typewriter.textContent += textToType.charAt(typeIndex);
+      typeIndex++;
+      setTimeout(typeWriter, 150); // Adjust speed (100ms per character)
+    }
+  }
 
   function goToIntroScreen() {
     splash.style.opacity = 0;
@@ -325,10 +353,32 @@ window.addEventListener("load", () => {
     }, 1000);
   }
 
-  if (video) video.addEventListener("ended", goToIntroScreen);
-  setTimeout(goToIntroScreen, 7000);
-});
+  // Start typewriter effect
+  if (typewriter) {
+    typeWriter();
+  }
 
+  if (video) {
+    video.addEventListener("ended", goToIntroScreen);
+    video.addEventListener("error", () => {
+      console.warn("Video failed to load, switching to intro screen.");
+      goToIntroScreen();
+    });
+    video.play().catch(() => {
+      console.warn("Auto-play failed, showing intro screen.");
+      goToIntroScreen();
+    });
+    video.onloadedmetadata = () => {//gets video actual length
+      const videoDuration = video.duration * 1000; // Convert to milliseconds
+      setTimeout(goToIntroScreen, videoDuration + 500); // Add buffer for typing
+    };
+  } else {
+    setTimeout(goToIntroScreen, 10500); // Fallback if no video
+  }
+
+  // Fallback to intro screen after 7 seconds (or adjust based on typing duration)
+  
+});
 // ✅ Screen switching utility
 function showScreen(id) {
   const screens = [
