@@ -26,6 +26,7 @@ body.dark button {
 /* === Title === */
 h1, h2, h3 {
   margin: 0.5em 0;
+  
 }
 
 input, select, button {
@@ -83,6 +84,21 @@ button:hover {
   overflow: hidden;
   transition: opacity 1s ease;
 }
+/* Typewriter effect */
+#typewriter {
+  font-size: clamp(1.5rem,5vw,2.5rem);/*responsive font size*/
+  color: #00ffff; /* Cyan for vibrancy */
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden; /* Hide text until typed */
+  border-right: 3px solid #00ffff; /* Blinking cursor */
+  animation: blink-caret 0.75s step-end infinite;
+}
+/* Blinking cursor animation */
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: #00ffff; }
+}
 
 #splash-screen video {
   position: absolute;
@@ -90,14 +106,20 @@ button:hover {
   height: 100%;
   object-fit: cover;
   z-index: 0;
+  filter: brightness(1.2) contrast(1.1);
 }
 
 #splash-screen .overlay {
   z-index: 1;
-  color: #00ffff;
-  font-size: 2.5em;
+  display: flex;  
   text-shadow: 2px 2px 8px black;
   text-align: center;
+  align-items: center;
+  width: 100% ;
+  height: 100%  ;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 /* === Board === */
