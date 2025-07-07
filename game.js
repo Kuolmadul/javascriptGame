@@ -91,6 +91,9 @@ function handleClick(e) {
   const emoji = getEmoji(currentPlayer);
   cell.textContent = emoji;
   cell.dataset.player = currentPlayer;
+  // Animate cell on move
+  cell.classList.add('cell-animate');
+  setTimeout(() => cell.classList.remove('cell-animate'), 350);
   saveGameState();
 
 if (checkWin(currentPlayer)) {
@@ -100,45 +103,62 @@ if (checkWin(currentPlayer)) {
   triggerConfetti();
   let winnerName;
   if (mode === "PvC" && currentPlayer === "O") {
-    // AI (O) wins in PvC mode
-    winnerName = getName("O"); // Use the computer’s name
+    winnerName = getName("O");
   } else {
-    // Human (X) wins or PvP win
     winnerName = getName(currentPlayer);
   }
   updateStatus(`${winnerName} wins! 🎉`);
-  updateLeaderboardData(winnerName);
-  // Increment rounds for the winner
+  // Save round for both players (winner and loser)
   const category = mode === "PvP" ? "PvP" : "PvC";
-  const winnerAvatar = mode === "PvC" && currentPlayer === "O" ? getEmoji("O") : getEmoji(currentPlayer);
+  const boardState = [...document.querySelectorAll('.cell')].map(cell => ({
+    text: cell.textContent,
+    player: cell.dataset.player || ""
+  }));
+  const roundData = {
+    board: boardState,
+    winner: winnerName,
+    mode: mode,
+    date: new Date().toISOString()
+  };
+  // Winner
   let winnerEntry = leaderboard[category].find(p => p.name === winnerName);
   if (!winnerEntry) {
-    winnerEntry = { name: winnerName, avatar: winnerAvatar, wins: 0, draws: 0, rounds: 0 };
+    winnerEntry = { name: winnerName, avatar: getEmoji(currentPlayer), wins: 0, draws: 0, rounds: 0, roundHistory: [] };
     leaderboard[category].push(winnerEntry);
   }
+  winnerEntry.wins += 1;
   winnerEntry.rounds += 1;
-  
+  if (!winnerEntry.roundHistory) winnerEntry.roundHistory = [];
+  winnerEntry.roundHistory.push(roundData);
+  // Loser
+  let loserName;
   if (mode === "PvP") {
-    const otherPlayer = currentPlayer === "X" ? "O" : "X";
-    const otherName = getName(otherPlayer);
-    let otherEntry = leaderboard[category].find(p => p.name === otherName);
-    if (!otherEntry) {
-      otherEntry = { name: otherName, avatar: getEmoji(otherPlayer), wins: 0, draws: 0, rounds: 0 };
-      leaderboard[category].push(otherEntry);
+    loserName = getName(currentPlayer === "X" ? "O" : "X");
+    let loserEntry = leaderboard[category].find(p => p.name === loserName);
+    if (!loserEntry) {
+      loserEntry = { name: loserName, avatar: getEmoji(currentPlayer === "X" ? "O" : "X"), wins: 0, draws: 0, rounds: 0, roundHistory: [] };
+      leaderboard[category].push(loserEntry);
     }
-    otherEntry.rounds += 1;
+    loserEntry.rounds += 1;
+    if (!loserEntry.roundHistory) loserEntry.roundHistory = [];
+    loserEntry.roundHistory.push(roundData);
   } else if (mode === "PvC") {
-    // In PvC, only human’s rounds increment if AI wins (AI not tracked in leaderboard)
+    // Only human's rounds increment if AI wins (AI not tracked in leaderboard)
     const humanName = getName("X");
     let humanEntry = leaderboard[category].find(p => p.name === humanName);
-    if (humanEntry) humanEntry.rounds += 1;
+    if (humanEntry) {
+      humanEntry.rounds += 1;
+      if (!humanEntry.roundHistory) humanEntry.roundHistory = [];
+      humanEntry.roundHistory.push(roundData);
+    }
   }
+  leaderboard[category].sort((a, b) => b.wins - a.wins);
+  leaderboard[category] = leaderboard[category].slice(0, 5);
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
- updateLeaderboard();
- document.getElementById("game-over-popup").style.display = "flex";
+  updateLeaderboard();
+  document.getElementById("game-over-popup").style.display = "flex";
   triggerConfetti();
- return;
-
+  return;
 }
 
 if (isDraw()) {
@@ -146,39 +166,43 @@ if (isDraw()) {
   localStorage.removeItem("gameState");
   playSound("draw");
   updateStatus("It's a draw! 🤝");
-  console.log("Draw detected, mode:", mode, "currentPlayer:", currentPlayer); // Debug log
-  // Increment rounds and draws for both players involved
   const category = mode === "PvP" ? "PvP" : "PvC";
   const playerXName = getName("X");
   const playerOName = getName("O");
   const playerXEmoji = getEmoji("X");
   const playerOEmoji = getEmoji("O");
-  console.log("Players - X:", playerXName, "O:", playerOName); // Debug log
+  const boardState = [...document.querySelectorAll('.cell')].map(cell => ({
+    text: cell.textContent,
+    player: cell.dataset.player || ""
+  }));
+  const roundData = {
+    board: boardState,
+    winner: "Draw",
+    mode: mode,
+    date: new Date().toISOString()
+  };
   // Update both players
   const players = [
     { name: playerXName, avatar: playerXEmoji },
     { name: playerOName, avatar: playerOEmoji }
   ];
   players.forEach(playerData => {
-    console.log("Processing player:", playerData.name); // Debug log
     let playerEntry = leaderboard[category].find(p => p.name === playerData.name);
     if (!playerEntry) {
-      console.log("Creating new entry for:", playerData.name);
-      playerEntry = { name: playerData.name, avatar: playerData.avatar, wins: 0, draws: 0, rounds: 0 };
+      playerEntry = { name: playerData.name, avatar: playerData.avatar, wins: 0, draws: 0, rounds: 0, roundHistory: [] };
       leaderboard[category].push(playerEntry);
     }
     playerEntry.rounds += 1;
     playerEntry.draws += 1;
-    console.log("Updated entry:", playerEntry); // Debug log
+    if (!playerEntry.roundHistory) playerEntry.roundHistory = [];
+    playerEntry.roundHistory.push(roundData);
   });
-  // In PvC, exclude computer if named (handled in updateLeaderboard)
+  leaderboard[category].sort((a, b) => b.wins - a.wins);
+  leaderboard[category] = leaderboard[category].slice(0, 5);
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  console.log("Leaderboard after draw:", leaderboard); // Debug log
   updateLeaderboard();
   document.getElementById("game-over-popup").style.display = "flex";
-
   return;
-
 }
   currentPlayer = currentPlayer === "X" ? "O" : "X";
   updateStatus(`${getName(currentPlayer)}'s Turn`);
@@ -238,7 +262,77 @@ function checkMiniWin(board, player) {
 
 function checkWin(player) {
   const cells = document.querySelectorAll(".cell");
-  return winningCombos.some(combo => combo.every(i => cells[i].dataset.player === player));
+  const winCombo = winningCombos.find(combo => combo.every(i => cells[i].dataset.player === player));
+  if (winCombo) {
+    // Animate winning line
+    winCombo.forEach(i => {
+      cells[i].classList.add('win-animate');
+      setTimeout(() => cells[i].classList.remove('win-animate'), 1200);
+    });
+    // Show animated line overlay
+    showWinLine(winCombo);
+    setTimeout(hideWinLine, 1300);
+    return true;
+  }
+  return false;
+}
+
+// Draw animated win line overlay
+function showWinLine(combo) {
+  let overlay = document.getElementById('win-line-overlay');
+  if (!overlay) {
+    overlay = document.createElement('canvas');
+    overlay.id = 'win-line-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '100';
+    document.getElementById('game-section').appendChild(overlay);
+  }
+  const board = document.getElementById('board');
+  const rect = board.getBoundingClientRect();
+  overlay.width = rect.width;
+  overlay.height = rect.height;
+  overlay.style.width = rect.width + 'px';
+  overlay.style.height = rect.height + 'px';
+  overlay.style.display = 'block';
+  const ctx = overlay.getContext('2d');
+  ctx.clearRect(0, 0, overlay.width, overlay.height);
+  // Get cell centers
+  const cells = board.querySelectorAll('.cell');
+  const getCellCenter = idx => {
+    const cellRect = cells[idx].getBoundingClientRect();
+    return {
+      x: cellRect.left - rect.left + cellRect.width / 2,
+      y: cellRect.top - rect.top + cellRect.height / 2
+    };
+  };
+  const start = getCellCenter(combo[0]);
+  const end = getCellCenter(combo[2]);
+  // Animate line
+  let progress = 0;
+  function animateLine() {
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+    ctx.strokeStyle = '#ff0';
+    ctx.lineWidth = 6;
+    ctx.shadowColor = '#ff0';
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(start.x + (end.x - start.x) * progress, start.y + (end.y - start.y) * progress);
+    ctx.stroke();
+    if (progress < 1) {
+      progress += 0.07;
+      requestAnimationFrame(animateLine);
+    }
+  }
+  animateLine();
+}
+
+function hideWinLine() {
+  const overlay = document.getElementById('win-line-overlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 function isDraw() {
@@ -301,6 +395,7 @@ function restartTimer() {
 function countdown() {
   if (!gameActive || gamePaused) return;
   document.getElementById("timer").textContent = `⏱️ ${timeLeft}`;
+  if (timeLeft <= 3 && timeLeft > 0) animateTimerWarning();
   if (timeLeft <= 0) {
     currentPlayer = currentPlayer === "X" ? "O" : "X";
     updateStatus(`${getName(currentPlayer)}'s Turn (Auto Skipped)`);
@@ -312,6 +407,45 @@ function countdown() {
   }
   timeLeft--;
   timer = setTimeout(countdown, 1000);
+}
+
+// Animated timer (pulse and color change)
+function animateTimerWarning() {
+  const timerEl = document.getElementById('timer');
+  timerEl.classList.add('timer-warning');
+  setTimeout(() => timerEl.classList.remove('timer-warning'), 900);
+}
+
+// Animated board theme transition
+function animateThemeChange(newTheme) {
+  const board = document.getElementById('board');
+  board.classList.add('theme-animate');
+  setTimeout(() => {
+    board.classList.remove('theme-animate');
+    document.body.className = '';
+    document.body.classList.add(`theme-${newTheme}`);
+  }, 500);
+}
+
+// Video background for game-section
+function setVideoBackground(url) {
+  let videoBg = document.getElementById('video-bg');
+  if (!videoBg) {
+    videoBg = document.createElement('video');
+    videoBg.id = 'video-bg';
+    videoBg.autoplay = true;
+    videoBg.loop = true;
+    videoBg.muted = true;
+    videoBg.style.position = 'absolute';
+    videoBg.style.top = '0';
+    videoBg.style.left = '0';
+    videoBg.style.width = '100%';
+    videoBg.style.height = '100%';
+    videoBg.style.objectFit = 'cover';
+    videoBg.style.zIndex = '-1';
+    document.getElementById('game-section').prepend(videoBg);
+  }
+  videoBg.src = url;
 }
 
 function playSound(type) {
@@ -358,16 +492,26 @@ function updateLeaderboardData(winner) {
   if (!winner) return;
   const category = mode === "PvP" ? "PvP" : "PvC";
   const playerEntry = leaderboard[category].find(p => p.name === winner);
-  
+  // Save the board state for this round
+  const boardState = [...document.querySelectorAll('.cell')].map(cell => ({
+    text: cell.textContent,
+    player: cell.dataset.player || ""
+  }));
+  const roundData = {
+    board: boardState,
+    winner: winner,
+    mode: mode,
+    date: new Date().toISOString()
+  };
   if (playerEntry) {
     playerEntry.wins += 1;
+    if (!playerEntry.roundHistory) playerEntry.roundHistory = [];
+    playerEntry.roundHistory.push(roundData);
   } else {
-    leaderboard[category].push({ name: winner, wins: 1, draws: 0, rounds: 0 });
+    leaderboard[category].push({ name: winner, wins: 1, draws: 0, rounds: 0, roundHistory: [roundData] });
   }
-  
   leaderboard[category].sort((a, b) => b.wins - a.wins);
   leaderboard[category] = leaderboard[category].slice(0, 5);
-  
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
 }
 
@@ -402,7 +546,7 @@ function updateLeaderboard() {
 
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
-    ["Name", "Wins", "Draws", "Rounds"].forEach(headerText => {
+    ["Name", "Wins", "Draws", "Rounds", "View Rounds"].forEach(headerText => {
       const th = document.createElement("th");
       th.textContent = headerText;
       th.style.border = "1px solid black";
@@ -413,7 +557,7 @@ function updateLeaderboard() {
     pvpTable.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    leaderboard.PvP.forEach(p => {
+    leaderboard.PvP.forEach((p, idx) => {
       const row = document.createElement("tr");
       ["name", "wins", "draws", "rounds"].forEach(prop => {
         const td = document.createElement("td");
@@ -422,10 +566,16 @@ function updateLeaderboard() {
         td.style.padding = "5px";
         row.appendChild(td);
       });
+      // Add view rounds button
+      const viewTd = document.createElement("td");
+      const viewBtn = document.createElement("button");
+      viewBtn.textContent = "View Rounds";
+      viewBtn.onclick = function() { showPlayerRounds('PvP', idx); };
+      viewTd.appendChild(viewBtn);
+      row.appendChild(viewTd);
       tbody.appendChild(row);
     });
     pvpTable.appendChild(tbody);
-
     list.appendChild(pvpTable);
   }
 
@@ -444,7 +594,7 @@ function updateLeaderboard() {
 
     const thead = document.createElement("thead");
     const headerRow = document.createElement("tr");
-    ["Name", "Wins", "Draws", "Rounds"].forEach(headerText => {
+    ["Name", "Wins", "Draws", "Rounds", "View Rounds"].forEach(headerText => {
       const th = document.createElement("th");
       th.textContent = headerText;
       th.style.border = "1px solid black";
@@ -455,7 +605,7 @@ function updateLeaderboard() {
     pvcTable.appendChild(thead);
 
     const tbody = document.createElement("tbody");
-    leaderboard.PvC.forEach(p => {
+    leaderboard.PvC.forEach((p, idx) => {
       if (mode !== "PvP" && (p.name.toLowerCase().includes("ai") || p.name.toLowerCase() === "computer")) {
         return; // Skip AI entry
       }
@@ -467,13 +617,225 @@ function updateLeaderboard() {
         td.style.padding = "5px";
         row.appendChild(td);
       });
+      // Add view rounds button
+      const viewTd = document.createElement("td");
+      const viewBtn = document.createElement("button");
+      viewBtn.textContent = "View Rounds";
+      viewBtn.onclick = function() { showPlayerRounds('PvC', idx); };
+      viewTd.appendChild(viewBtn);
+      row.appendChild(viewTd);
       tbody.appendChild(row);
     });
     pvcTable.appendChild(tbody);
-
     list.appendChild(pvcTable);
   }
-    leaderboardUpdatePending = false;
+}
+
+// Show a modal with a list of rounds for a player, each with a replay button
+function showPlayerRounds(category, playerIdx) {
+  const player = leaderboard[category][playerIdx];
+  if (!player || (!player.roundHistory && !player.wins)) {
+    alert('No rounds to show for this player.');
+    return;
+  }
+  // Defensive: try to find by name if roundHistory is missing
+  let foundPlayer = player;
+  if (!player.roundHistory || !Array.isArray(player.roundHistory)) {
+    foundPlayer = leaderboard[category].find(p => p.name === player.name && Array.isArray(p.roundHistory) && p.roundHistory.length > 0) || player;
+  }
+  // If still no roundHistory, allow showing a message
+  if (!foundPlayer.roundHistory || foundPlayer.roundHistory.length === 0) {
+    alert('No rounds to show for this player.');
+    return;
+  }
+  // Create modal
+  let modal = document.getElementById('rounds-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'rounds-modal';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = '';
+  const content = document.createElement('div');
+  content.style.background = '#fff';
+  content.style.padding = '20px';
+  content.style.borderRadius = '8px';
+  content.style.maxWidth = '90vw';
+  content.style.maxHeight = '80vh';
+  content.style.overflowY = 'auto';
+  content.style.boxShadow = '0 2px 10px #0008';
+  const title = document.createElement('h3');
+  title.textContent = `Rounds for ${foundPlayer.name}`;
+  content.appendChild(title);
+  foundPlayer.roundHistory.forEach((round, i) => {
+    const roundDiv = document.createElement('div');
+    roundDiv.style.marginBottom = '10px';
+    roundDiv.style.border = '1px solid #ccc';
+    roundDiv.style.padding = '10px';
+    roundDiv.style.borderRadius = '5px';
+    roundDiv.innerHTML = `<b>Round ${i+1}</b> - Winner: ${round.winner} - Mode: ${round.mode} - Date: ${new Date(round.date).toLocaleString()}`;
+    const replayBtn = document.createElement('button');
+    replayBtn.textContent = 'Replay';
+    replayBtn.style.marginLeft = '10px';
+    replayBtn.onclick = function() { replayRound(round); };
+    roundDiv.appendChild(replayBtn);
+    content.appendChild(roundDiv);
+  });
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Close';
+  closeBtn.style.marginTop = '10px';
+  closeBtn.onclick = function() { modal.style.display = 'none'; };
+  content.appendChild(closeBtn);
+  modal.appendChild(content);
+  modal.style.display = 'flex';
+}
+
+// Replay a round by showing the board state
+function replayRound(round) {
+  // Show the game section
+  showScreen('game-section');
+  createBoard();
+  const cells = document.querySelectorAll('.cell');
+  // Clear the board for animation
+  cells.forEach(cell => {
+    cell.textContent = '';
+    cell.removeAttribute('data-player');
+  });
+
+  // --- Replay Controls ---
+  let replaySpeed = 600; // ms per move
+  let isPaused = false;
+  let step = 0;
+  let timeoutId = null;
+
+  // Build move order (same as before)
+  let boardArr = round.board.map(cell => cell.player || '');
+  let moveCount = boardArr.filter(x => x).length;
+  let tempBoard = Array(9).fill('');
+  let moveOrder = [];
+  for (let m = 0; m < moveCount; m++) {
+    let player = (m % 2 === 0) ? 'X' : 'O';
+    for (let i = 0; i < 9; i++) {
+      if (!tempBoard[i] && boardArr[i] === player) {
+        moveOrder.push({ idx: i, player: player, text: round.board[i].text });
+        tempBoard[i] = player;
+        break;
+      }
+    }
+  }
+
+  // --- Controls UI ---
+  let controls = document.getElementById('replay-controls');
+  if (!controls) {
+    controls = document.createElement('div');
+    controls.id = 'replay-controls';
+    controls.style.display = 'flex';
+    controls.style.justifyContent = 'center';
+    controls.style.alignItems = 'center';
+    controls.style.gap = '10px';
+    controls.style.margin = '10px auto';
+    controls.style.background = '#f8f8f8';
+    controls.style.borderRadius = '8px';
+    controls.style.padding = '8px 16px';
+    controls.style.width = 'fit-content';
+    controls.style.boxShadow = '0 2px 8px #0002';
+    document.getElementById('game-section').prepend(controls);
+  }
+  controls.innerHTML = '';
+  // Play/Pause button
+  const playPauseBtn = document.createElement('button');
+  playPauseBtn.textContent = 'Pause';
+  playPauseBtn.onclick = function() {
+    isPaused = !isPaused;
+    playPauseBtn.textContent = isPaused ? 'Play' : 'Pause';
+    if (!isPaused) animateStep();
+    else if (timeoutId) clearTimeout(timeoutId);
+  };
+  controls.appendChild(playPauseBtn);
+  // Speed control
+  const speedLabel = document.createElement('span');
+  speedLabel.textContent = 'Speed:';
+  controls.appendChild(speedLabel);
+  const speedInput = document.createElement('input');
+  speedInput.type = 'range';
+  speedInput.min = 200;
+  speedInput.max = 1500;
+  speedInput.value = replaySpeed;
+  speedInput.step = 100;
+  speedInput.style.width = '100px';
+  speedInput.oninput = function() {
+    replaySpeed = parseInt(speedInput.value);
+    speedValue.textContent = replaySpeed + 'ms';
+  };
+  controls.appendChild(speedInput);
+  const speedValue = document.createElement('span');
+  speedValue.textContent = replaySpeed + 'ms';
+  controls.appendChild(speedValue);
+  // Restart button
+  const restartBtn = document.createElement('button');
+  restartBtn.textContent = 'Restart';
+  restartBtn.onclick = function() {
+    if (timeoutId) clearTimeout(timeoutId);
+    step = 0;
+    cells.forEach(cell => {
+      cell.textContent = '';
+      cell.removeAttribute('data-player');
+    });
+    isPaused = false;
+    playPauseBtn.textContent = 'Pause';
+    animateStep();
+  };
+  controls.appendChild(restartBtn);
+  // Exit button
+  const exitBtn = document.createElement('button');
+  exitBtn.textContent = 'Exit Replay';
+  exitBtn.onclick = function() {
+    if (timeoutId) clearTimeout(timeoutId);
+    controls.remove();
+    // Optionally, return to leaderboard or home
+    updateStatus('Replay exited.');
+  };
+  controls.appendChild(exitBtn);
+
+  // --- Animation logic ---
+  function animateStep() {
+    if (isPaused) return;
+    if (step > 0) {
+      const prevMove = moveOrder[step - 1];
+      if (cells[prevMove.idx]) {
+        cells[prevMove.idx].textContent = prevMove.text;
+        cells[prevMove.idx].dataset.player = prevMove.player;
+      }
+    }
+    if (step < moveOrder.length) {
+      const move = moveOrder[step];
+      if (cells[move.idx]) {
+        cells[move.idx].classList.add('replay-highlight');
+        timeoutId = setTimeout(() => {
+          cells[move.idx].classList.remove('replay-highlight');
+          step++;
+          animateStep();
+        }, replaySpeed);
+      } else {
+        step++;
+        animateStep();
+      }
+    } else {
+      // All moves done, fill the rest of the board (in case of draw)
+      round.board.forEach((cellData, i) => {
+        if (cells[i]) {
+          cells[i].textContent = cellData.text || '';
+          if (cellData.player) cells[i].dataset.player = cellData.player;
+        }
+      });
+      gameActive = false;
+      gamePaused = true;
+      clearTimeout(timer);
+      updateStatus(`Replay: Winner was ${round.winner}`);
+      leaderboardUpdatePending = false;
+    }
+  }
+  animateStep();
 }
 
 //the function for show more and less
@@ -498,6 +860,17 @@ function openTutorial(event) {
   // Open the link in a new tab
   window.open(youtubeLink.href, '_blank'); // Open in new tab
 }
+
+// Ensure leaderboard button works on setup page
+document.addEventListener('DOMContentLoaded', function() {
+  var leaderboardBtn = document.querySelector("#gameForm button[onclick*='showLeaderboard']");
+  if (leaderboardBtn) {
+    leaderboardBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      showLeaderboard();
+    });
+  }
+});
 // Confetti
 const confettiCanvas = document.getElementById("confetti-canvas");
 const ctx = confettiCanvas.getContext("2d");
@@ -511,14 +884,20 @@ resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
 function triggerConfetti() {
-  confetti = Array.from({ length: 150 }, () => ({
-    x: Math.random() * confettiCanvas.width,
-    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
-    r: Math.random() * 6 + 2,
-    d: Math.random() * 50 + 50,
-    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-    tilt: Math.random() * 10 - 10
-  }));
+  // Emoji confetti shapes
+  const emojis = ['🎉','✨','🎊','⭐','🔥','😃','😎','🏆','🥇','🥳'];
+  confetti = Array.from({ length: 120 }, () => {
+    const useEmoji = Math.random() < 0.4;
+    return {
+      x: Math.random() * confettiCanvas.width,
+      y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 50 + 50,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+      tilt: Math.random() * 10 - 10,
+      emoji: useEmoji ? emojis[Math.floor(Math.random() * emojis.length)] : null
+    };
+  });
   animateConfetti();
 }
 
@@ -527,16 +906,85 @@ function animateConfetti() {
   requestAnimationFrame(animateConfetti);
   ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
   confetti.forEach(p => {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
-    ctx.fill();
+    if (p.emoji) {
+      ctx.font = `${p.r * 3}px serif`;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.tilt * 0.1);
+      ctx.fillText(p.emoji, 0, 0);
+      ctx.restore();
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+    }
     p.y += p.d * 0.01;
     p.tilt += 0.1;
     p.x += Math.sin(p.tilt);
   });
   confetti = confetti.filter(p => p.y < confettiCanvas.height);
 }
+
+// Animated board theme transition
+function animateThemeChange(newTheme) {
+  const board = document.getElementById('board');
+  board.classList.add('theme-animate');
+  setTimeout(() => {
+    board.classList.remove('theme-animate');
+    document.body.className = '';
+    document.body.classList.add(`theme-${newTheme}`);
+  }, 500);
+}
+
+// Video background for game-section
+function setVideoBackground(url) {
+  let videoBg = document.getElementById('video-bg');
+  if (!videoBg) {
+    videoBg = document.createElement('video');
+    videoBg.id = 'video-bg';
+    videoBg.autoplay = true;
+    videoBg.loop = true;
+    videoBg.muted = true;
+    videoBg.style.position = 'absolute';
+    videoBg.style.top = '0';
+    videoBg.style.left = '0';
+    videoBg.style.width = '100%';
+    videoBg.style.height = '100%';
+    videoBg.style.objectFit = 'cover';
+    videoBg.style.zIndex = '-1';
+    document.getElementById('game-section').prepend(videoBg);
+  }
+  videoBg.src = url;
+}
+
+// Example: setVideoBackground('ticanimation.mp4'); // Call this on game start if you want a video background
+
+// Animated timer (pulse and color change)
+function animateTimerWarning() {
+  const timerEl = document.getElementById('timer');
+  timerEl.classList.add('timer-warning');
+  setTimeout(() => timerEl.classList.remove('timer-warning'), 900);
+}
+
+// Enhance countdown to animate timer when low
+const originalCountdown = countdown;
+countdown = function() {
+  if (!gameActive || gamePaused) return;
+  document.getElementById('timer').textContent = `⏱️ ${timeLeft}`;
+  if (timeLeft <= 3 && timeLeft > 0) animateTimerWarning();
+  if (timeLeft <= 0) {
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    updateStatus(`${getName(currentPlayer)}'s Turn (Auto Skipped)`);
+    restartTimer();
+    if ((mode === 'Easy' || mode === 'Hard') && currentPlayer === 'O') {
+      setTimeout(aiMove, 500);
+    }
+    return;
+  }
+  timeLeft--;
+  timer = setTimeout(countdown, 1000);
+};
 
 function clearConfetti() {
   confetti = [];
