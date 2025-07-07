@@ -254,6 +254,8 @@ function getEmoji(player) {
 
 function resetGame() {
  document.getElementById("game-over-popup").style.display = "none";
+ document.getElementById("pause-popup").style.display = "none";
+ document.getElementById("leaderboard-popup").classList.remove("active");
  gameActive = true;
  gamePaused = false;
 currentPlayer = "X";
