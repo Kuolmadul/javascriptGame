@@ -6,7 +6,11 @@ let timeLeft = 10;
 let boardTheme = "classic";
 let soundOn = true;
 let mode = "PvP";
-let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || { PvP: [], PvC: [] };
+if (!leaderboard.PvP || !leaderboard.PvC) {
+  leaderboard = { PvP: [], PvC: [] };
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+}//ensures leaderboard is always an object with PvP and PvC array
 
 const winningCombos = [
   [0,1,2],[3,4,5],[6,7,8],
@@ -15,22 +19,48 @@ const winningCombos = [
 ];
 
 function startGame() {
-  // const form = document.getElementById("gameForm");
-  // if (!form.checkValidity()) {
-  //   form.reportValidity();
-  //   return;
-  // }
-  currentPlayer = "X";
-  gameActive = true;
-  mode = document.getElementById("gameMode").value;
-  boardTheme = document.getElementById("themeSelector").value;
+  localStorage.removeItem("gameState");
 
-  document.body.classList.remove("theme-classic", "theme-neon", "theme-wood", "theme-clear");
-  document.body.classList.add(`theme-${boardTheme}`);
+  try {
+    // Clear any existing game state to start fresh
+    localStorage.removeItem("gameState");
 
-  showScreen("game-section");
-  resetGame();
-  updateLeaderboard();
+    // Reset game variables
+    currentPlayer = "X";
+    gameActive = true;
+    gamePaused = false;
+    mode = document.getElementById("gameMode").value;
+    boardTheme = document.getElementById("themeSelector").value;
+
+    // Update theme
+    document.body.classList.remove("theme-classic", "theme-neon", "theme-wood", "theme-clear");
+    document.body.classList.add(`theme-${boardTheme}`);
+
+   // No round increment here, moved to game end
+const category = mode === "PvP" ? "PvP" : "PvC";
+// Only update leaderboard structure if not already present
+const player1 = getName("X");
+let player1Entry = leaderboard[category].find(p => p.name === player1);
+if (!player1Entry) {
+  leaderboard[category].push({ name: player1, wins: 0, rounds: 0 });
+}
+if (mode === "PvP") {
+  const player2 = getName("O");
+  let player2Entry = leaderboard[category].find(p => p.name === player2);
+  if (!player2Entry) {
+    leaderboard[category].push({ name: player2, wins: 0, rounds: 0 });
+  }
+}
+localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+
+    // Show game screen and reset game
+    showScreen("game-section");
+    resetGame();
+    updateLeaderboard();
+  } catch (error) {
+    console.error("Error starting game:", error);
+    updateStatus("Failed to start game. Please try again.");
+  }
 }
 
 function createBoard() {
@@ -55,25 +85,95 @@ function handleClick(e) {
   const emoji = getEmoji(currentPlayer);
   cell.textContent = emoji;
   cell.dataset.player = currentPlayer;
+  saveGameState();
 
-  if (checkWin(currentPlayer)) {
-    gameActive = false;
-    playSound("win");
-    triggerConfetti();
-    updateStatus(`${getName(currentPlayer)} wins! 🎉`);
-    updateLeaderboardData(getName(currentPlayer));
-    showScreen("game-over");
-    return;
+if (checkWin(currentPlayer)) {
+  gameActive = false;
+  localStorage.removeItem("gameState");
+  playSound("win");
+  triggerConfetti();
+  let winnerName;
+  if (mode === "PvC" && currentPlayer === "O") {
+    // AI (O) wins in PvC mode
+    winnerName = getName("O"); // Use the computer’s name
+  } else {
+    // Human (X) wins or PvP win
+    winnerName = getName(currentPlayer);
   }
-
-  if (isDraw()) {
-    gameActive = false;
-    playSound("draw");
-    updateStatus("It's a draw! 🤝");
-    showScreen("game-over");
-    return;
+  updateStatus(`${winnerName} wins! 🎉`);
+  updateLeaderboardData(winnerName);
+  // Increment rounds for the winner
+  const category = mode === "PvP" ? "PvP" : "PvC";
+  const winnerAvatar = mode === "PvC" && currentPlayer === "O" ? getEmoji("O") : getEmoji(currentPlayer);
+  let winnerEntry = leaderboard[category].find(p => p.name === winnerName);
+  if (!winnerEntry) {
+    winnerEntry = { name: winnerName, avatar: winnerAvatar, wins: 0, draws: 0, rounds: 0 };
+    leaderboard[category].push(winnerEntry);
   }
+  winnerEntry.rounds += 1;
+  
+  if (mode === "PvP") {
+    const otherPlayer = currentPlayer === "X" ? "O" : "X";
+    const otherName = getName(otherPlayer);
+    let otherEntry = leaderboard[category].find(p => p.name === otherName);
+    if (!otherEntry) {
+      otherEntry = { name: otherName, avatar: getEmoji(otherPlayer), wins: 0, draws: 0, rounds: 0 };
+      leaderboard[category].push(otherEntry);
+    }
+    otherEntry.rounds += 1;
+  } else if (mode === "PvC") {
+    // In PvC, only human’s rounds increment if AI wins (AI not tracked in leaderboard)
+    const humanName = getName("X");
+    let humanEntry = leaderboard[category].find(p => p.name === humanName);
+    if (humanEntry) humanEntry.rounds += 1;
+  }
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+ updateLeaderboard();
+ document.getElementById("game-over-popup").style.display = "flex";
+  triggerConfetti();
+ return;
 
+}
+
+if (isDraw()) {
+  gameActive = false;
+  localStorage.removeItem("gameState");
+  playSound("draw");
+  updateStatus("It's a draw! 🤝");
+  console.log("Draw detected, mode:", mode, "currentPlayer:", currentPlayer); // Debug log
+  // Increment rounds and draws for both players involved
+  const category = mode === "PvP" ? "PvP" : "PvC";
+  const playerXName = getName("X");
+  const playerOName = getName("O");
+  const playerXEmoji = getEmoji("X");
+  const playerOEmoji = getEmoji("O");
+  console.log("Players - X:", playerXName, "O:", playerOName); // Debug log
+  // Update both players
+  const players = [
+    { name: playerXName, avatar: playerXEmoji },
+    { name: playerOName, avatar: playerOEmoji }
+  ];
+  players.forEach(playerData => {
+    console.log("Processing player:", playerData.name); // Debug log
+    let playerEntry = leaderboard[category].find(p => p.name === playerData.name);
+    if (!playerEntry) {
+      console.log("Creating new entry for:", playerData.name);
+      playerEntry = { name: playerData.name, avatar: playerData.avatar, wins: 0, draws: 0, rounds: 0 };
+      leaderboard[category].push(playerEntry);
+    }
+    playerEntry.rounds += 1;
+    playerEntry.draws += 1;
+    console.log("Updated entry:", playerEntry); // Debug log
+  });
+  // In PvC, exclude computer if named (handled in updateLeaderboard)
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+  console.log("Leaderboard after draw:", leaderboard); // Debug log
+  updateLeaderboard();
+  document.getElementById("game-over-popup").style.display = "flex";
+
+  return;
+
+}
   currentPlayer = currentPlayer === "X" ? "O" : "X";
   updateStatus(`${getName(currentPlayer)}'s Turn`);
   restartTimer();
@@ -82,7 +182,6 @@ function handleClick(e) {
     setTimeout(aiMove, 500);
   }
 }
-
 function aiMove() {
   let bestIndex;
   const empty = [...document.querySelectorAll(".cell")].filter(c => c.textContent === "");
@@ -95,8 +194,12 @@ function aiMove() {
   }
 
   const cell = document.querySelector(`.cell[data-index='${bestIndex}']`);
-  handleClick({ target: cell });
+  if (cell) {
+    currentPlayer = "O"; // Set AI as current player
+    handleClick({ target: cell }); // Let handleClick handle everything (win, round count, leaderboard)
+  }
 }
+
 
 function getBestMove() {
   const cells = [...document.querySelectorAll(".cell")];
@@ -150,11 +253,15 @@ function getEmoji(player) {
 }
 
 function resetGame() {
-  gameActive = true;
+ document.getElementById("game-over-popup").style.display = "none";
+ gameActive = true;
+ gamePaused = false;
+currentPlayer = "X";
   createBoard();
   updateStatus(`${getName("X")}'s Turn`);
   restartTimer();
   clearConfetti();
+  saveGameState();
 }
 
 function goHome() {
@@ -163,17 +270,25 @@ function goHome() {
 }
 
 function pauseGame() {
+  console.log("⏸ Pausing game...");
   gamePaused = true;
-  clearTimeout(timer);
-  showScreen("pause-menu");
+  clearTimeout(timer); 
+  saveGameState();     
+  document.getElementById("pause-popup").style.display = "flex";
 }
 
+
+
+
 function resumeGame() {
+  console.log("▶ Resuming game...");
   gamePaused = false;
-  showScreen("game-section");
-  updateStatus(`${getName(currentPlayer)}'s Turn`);
-  restartTimer();
+  document.getElementById("pause-popup").style.display = "none";
+  countdown(); // Resume countdown from where it left
 }
+
+
+
 
 function restartTimer() {
   clearTimeout(timer);
@@ -223,7 +338,8 @@ function closeSettings() {
 function resetStats() {
   if (confirm("Reset all data?")) {
     localStorage.clear();
-    leaderboard = [];
+    leaderboard = { PvP: [], PvC: [] };
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
     updateLeaderboard();
     goHome();
   }
@@ -239,33 +355,126 @@ document.getElementById("themeToggle").addEventListener("change", e => {
 
 function updateLeaderboardData(winner) {
   if (!winner) return;
-  leaderboard.push({ name: winner, score: 1, time: Date.now() });
-  leaderboard = leaderboard.reduce((acc, item) => {
-    const existing = acc.find(i => i.name === item.name);
-    if (existing) existing.score += item.score;
-    else acc.push(item);
-    return acc;
-  }, []);
-  leaderboard.sort((a, b) => b.score - a.score);
-  leaderboard = leaderboard.slice(0, 5);
+  const category = mode === "PvP" ? "PvP" : "PvC";
+  const playerEntry = leaderboard[category].find(p => p.name === winner);
+  
+  if (playerEntry) {
+    playerEntry.wins += 1;
+  } else {
+    leaderboard[category].push({ name: winner, wins: 1, draws: 0, rounds: 0 });
+  }
+  
+  leaderboard[category].sort((a, b) => b.wins - a.wins);
+  leaderboard[category] = leaderboard[category].slice(0, 5);
+  
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-  updateLeaderboard();
 }
 
+
+let leaderboardUpdatePending = false;
+let lastUpdateTime = 0;
 function updateLeaderboard() {
-  const list = document.getElementById("leaderboardList");
-  const screenList = document.getElementById("leaderboardScreenList");
-  [list, screenList].forEach(l => {
-    if (!l) return;
-    l.innerHTML = "";
-    leaderboard.forEach(p => {
-      const li = document.createElement("li");
-      li.textContent = `${p.name}: ${p.score}`;
-      l.appendChild(li);
-    });
-  });
-}
+  const now = Date.now();
+  if (leaderboardUpdatePending || (now - lastUpdateTime < 1000)) return;
+  leaderboardUpdatePending = true;
+  lastUpdateTime = now;
 
+  const list = document.getElementById("leaderboardList"); // Primary target
+  if (!list) {
+    console.error("Leaderboard list element (#leaderboardList) not found!");
+    return;
+  }
+  list.innerHTML = "";
+
+  // PvP Leaderboard Table
+  if (leaderboard.PvP.length > 0) {
+    const pvpTable = document.createElement("table");
+    pvpTable.style.width = "100%";
+    pvpTable.style.borderCollapse = "collapse";
+    pvpTable.style.marginBottom = "20px";
+
+    const pvpHeader = document.createElement("caption");
+    pvpHeader.textContent = "PvP Leaderboard";
+    pvpHeader.style.fontWeight = "bold";
+    pvpHeader.style.marginBottom = "10px";
+    pvpTable.appendChild(pvpHeader);
+
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    ["Name", "Wins", "Draws", "Rounds"].forEach(headerText => {
+      const th = document.createElement("th");
+      th.textContent = headerText;
+      th.style.border = "1px solid black";
+      th.style.padding = "5px";
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    pvpTable.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    leaderboard.PvP.forEach(p => {
+      const row = document.createElement("tr");
+      ["name", "wins", "draws", "rounds"].forEach(prop => {
+        const td = document.createElement("td");
+        td.textContent = p[prop] || 0;
+        td.style.border = "1px solid black";
+        td.style.padding = "5px";
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
+    });
+    pvpTable.appendChild(tbody);
+
+    list.appendChild(pvpTable);
+  }
+
+  // PvC Leaderboard Table
+  if (leaderboard.PvC.length > 0) {
+    const pvcTable = document.createElement("table");
+    pvcTable.style.width = "100%";
+    pvcTable.style.borderCollapse = "collapse";
+    pvcTable.style.marginBottom = "20px";
+
+    const pvcHeader = document.createElement("caption");
+    pvcHeader.textContent = "PvC Leaderboard";
+    pvcHeader.style.fontWeight = "bold";
+    pvcHeader.style.marginBottom = "10px";
+    pvcTable.appendChild(pvcHeader);
+
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    ["Name", "Wins", "Draws", "Rounds"].forEach(headerText => {
+      const th = document.createElement("th");
+      th.textContent = headerText;
+      th.style.border = "1px solid black";
+      th.style.padding = "5px";
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    pvcTable.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    leaderboard.PvC.forEach(p => {
+      if (mode !== "PvP" && (p.name.toLowerCase().includes("ai") || p.name.toLowerCase() === "computer")) {
+        return; // Skip AI entry
+      }
+      const row = document.createElement("tr");
+      ["name", "wins", "draws", "rounds"].forEach(prop => {
+        const td = document.createElement("td");
+        td.textContent = p[prop] || 0;
+        td.style.border = "1px solid black";
+        td.style.padding = "5px";
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
+    });
+    pvcTable.appendChild(tbody);
+
+    list.appendChild(pvcTable);
+  }
+
+  leaderboardUpdatePending = false;
+}
 // Confetti
 const confettiCanvas = document.getElementById("confetti-canvas");
 const ctx = confettiCanvas.getContext("2d");
@@ -341,17 +550,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeIndex < textToType.length) {
       typewriter.textContent += textToType.charAt(typeIndex);
       typeIndex++;
-      setTimeout(typeWriter, 150); // Adjust speed (100ms per character)
+      setTimeout(typeWriter, 150); // Adjust speed (150ms per character)
     }
   }
 
-  function goToIntroScreen() {
-    splash.style.opacity = 0;
-    setTimeout(() => {
-      splash.style.display = "none";
+ function goToIntroScreen() {
+  splash.style.opacity = 0;
+  setTimeout(() => {
+    splash.style.display = "none";
+    const restored = restoreGameState();
+
+    // ✅ Always show intro screen if restoring fails or was paused
+    if (!restored || restored === "interrupted") {
       intro.style.display = "block";
-    }, 1000);
-  }
+      showScreen("intro-screen");
+    }
+
+    // ✅ ALWAYS update leaderboard regardless of restore status
+    updateLeaderboard();
+  }, 1000);
+}
+
 
   // Start typewriter effect
   if (typewriter) {
@@ -368,30 +587,154 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn("Auto-play failed, showing intro screen.");
       goToIntroScreen();
     });
-    video.onloadedmetadata = () => {//gets video actual length
+    video.onloadedmetadata = () => {
       const videoDuration = video.duration * 1000; // Convert to milliseconds
       setTimeout(goToIntroScreen, videoDuration + 500); // Add buffer for typing
     };
   } else {
     setTimeout(goToIntroScreen, 10500); // Fallback if no video
   }
-
-  // Fallback to intro screen after 7 seconds (or adjust based on typing duration)
-  
 });
+// Fallback to intro screen after 7 seconds (or adjust based on typing duration)
+  
+
 // ✅ Screen switching utility
 function showScreen(id) {
   const screens = [
     "intro-screen",
     "game-section",
     "settings-panel",
-    "game-over",
-    "pause-menu",
+    "game-over-popup",
+    "pause-screen",
     "how-to-play",
     "leaderboard-screen"
   ];
   screens.forEach(s => {
     const el = document.getElementById(s);
-    if (el) el.style.display = s === id ? "block" : "none";
+    if (el) {
+      if (s === id) {
+        el.style.display = "flex";
+        el.classList.add("active");
+        console.log("Showing screen:", s);
+      } else {
+        el.style.display = "none";
+        el.classList.remove("active");
+      }
+    }
   });
 }
+
+
+function saveGameState() {
+  const cells = [...document.querySelectorAll(".cell")];
+
+   const gameState = {
+    board: cells.map(c => ({ text: c.textContent, player: c.dataset.player || "" })),
+    currentPlayer: currentPlayer,
+    gameActive: gameActive,
+    gamePaused: gamePaused,
+    timeLeft: timeLeft,
+    mode: mode,
+    boardTheme: boardTheme,
+    playerXName: getName("X"),
+    playerXEmoji: getEmoji("X"),
+    playerOName: getName("O"),
+    playerOEmoji: getEmoji("O"),
+    };
+  localStorage.setItem("gameState", JSON.stringify(gameState));
+  console.log("Game state saved:", gameState); // Debug log
+}
+
+
+function restoreGameState() {
+  try {
+    const gameState = JSON.parse(localStorage.getItem("gameState"));
+    if (!gameState || !gameState.board || !gameState.currentPlayer || !gameState.gameActive) {
+      console.warn("No valid or active game state found in localStorage. Starting fresh.");
+      return false;
+    }
+
+    currentPlayer = gameState.currentPlayer;
+    gameActive = gameState.gameActive;
+    gamePaused = gameState.gamePaused || false;
+    timeLeft = gameState.timeLeft || 10;
+    mode = gameState.mode || "PvP";
+    boardTheme = gameState.boardTheme || "classic";
+
+    // Restore player inputs if elements exist
+    const playerXName = document.getElementById("playerXName");
+    const playerXEmoji = document.getElementById("playerXEmoji");
+    const playerOName = document.getElementById("playerOName");
+    const playerOEmoji = document.getElementById("playerOEmoji");
+    const gameMode = document.getElementById("gameMode");
+    const themeSelector = document.getElementById("themeSelector");
+
+    if (playerXName) playerXName.value = gameState.playerXName || "Player X";
+    if (playerXEmoji) playerXEmoji.value = gameState.playerXEmoji || "😀";
+    if (playerOName) playerOName.value = gameState.playerOName || "Player O";
+    if (playerOEmoji) playerOEmoji.value = gameState.playerOEmoji || "🤖";
+    if (gameMode) gameMode.value = mode;
+    if (themeSelector) themeSelector.value = boardTheme;
+
+    // Apply theme
+    document.body.classList.remove("theme-classic", "theme-neon", "theme-wood", "theme-clear");
+    document.body.classList.add(`theme-${boardTheme}`);
+
+    // Restore board
+    createBoard();
+    const cells = document.querySelectorAll(".cell");
+    gameState.board.forEach((cellData, i) => {
+      if (cells[i]) {
+        cells[i].textContent = cellData.text || "";
+        if (cellData.player) cells[i].dataset.player = cellData.player;
+      }
+    });
+
+    // Check if game was already won or drawn
+    if (!gameActive) {
+      resetGame(); // Reset to a new game if the previous game ended
+      return true;
+    }
+
+    // Update UI
+    updateStatus(`${getName(currentPlayer)}'s Turn`);
+    document.getElementById("timer").textContent = `⏱️ ${timeLeft}`;
+    if (gameActive && !gamePaused) countdown();
+
+      if (!gamePaused) {
+    showScreen("game-section");
+    }
+  return true;
+
+  } catch (error) {
+    console.error("Error restoring game state:", error);
+    localStorage.removeItem("gameState"); // Clear invalid state
+    return false;
+  }
+}
+function showLeaderboard() {
+  const popup = document.getElementById("leaderboard-popup");
+  if (!popup) {
+    console.error("❌ Leaderboard popup not found");
+    return;
+  }
+
+  updateLeaderboard();
+  popup.classList.add("active");
+}
+
+
+
+function closeLeaderboard() {
+  document.getElementById("leaderboard-popup").classList.remove("active");
+}
+
+
+
+
+
+ 
+
+
+
+

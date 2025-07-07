@@ -26,7 +26,7 @@
     <label style="color: white;">Player 1 Name:</label>
     <input id="playerXName" type="text" placeholder="Name" />
     <label>Emoji / Avatar:</label>
-     <select id="playerOEmoji">
+     <select id="playerXEmoji">
         <option value="❌">❌</option>
         <option value="😎">😎</option>
         <option value="🐱">🐱</option>
@@ -39,7 +39,7 @@
     <label style="color: white;">Player 2 Name:</label>
     <input id="playerOName" type="text" placeholder="Name" />
     <label>Emoji / Avatar:</label>
-      <select id="playerXEmoji">
+      <select id="playerOEmoji">
         <option value="⭕️">⭕️</option>
         <option value="😀">😀</option>
         <option value="🤖">🤖</option>
@@ -66,7 +66,7 @@
   <div style="margin-top: 15px;">
     <button onclick="startGame()">▶ Start Game</button>
     <button onclick="showHowToPlay()">📘 How to Play</button>
-    <button onclick="showLeaderboard()">🏆 Leaderboard</button>
+    
   </div>
 </div>
 
@@ -83,12 +83,16 @@
     <button onclick="goHome()">🏠 Home</button>
     <button onclick="openSettings()">⚙ Settings</button>
   </div>
-
-  <div id="dashboard">
-    <h3>🏆 Leaderboard (Top 5)</h3>
-    <ol id="leaderboardList"></ol>
+  <!-- Game Over Popup -->
+<div id="game-over-popup" class="popup-overlay">
+  <div class="popup-content">
+    <h2>🎉 Game Over</h2>
+    <button onclick="resetGame()">🔁 New Game</button>
+    <button onclick="showLeaderboard()">🏆 View Leaderboard</button>
+    <button onclick="goHome()">🏠 Home</button>
   </div>
 </div>
+
 
 <!-- How to Play -->
 <div id="howto-screen" class="screen">
@@ -99,20 +103,16 @@
   <button onclick="goHome()">🏠 Home</button>
 </div>
 
-<!-- Leaderboard Screen -->
-<div id="leaderboard-screen" class="screen">
-  <h2>🏆 Top Players</h2>
-  <ol id="leaderboardListPage"></ol>
-  <button onclick="goHome()">🏠 Home</button>
+<!-- Pause Popup -->
+<div id="pause-popup" class="popup-overlay">
+  <div class="popup-content">
+    <h2>⏸ Game Paused</h2>
+    <button onclick="resumeGame()">▶ Resume</button>
+    <button onclick="resetGame()">🔁 Restart</button>
+    <button onclick="goHome()">🏠 Home</button>
+  </div>
 </div>
 
-<!-- Pause Screen -->
-<div id="pause-screen" class="screen">
-  <h2>⏸ Game Paused</h2>
-  <button onclick="resumeGame()">▶ Resume</button>
-  <button onclick="resetGame()">🔁 Restart</button>
-  <button onclick="goHome()">🏠 Home</button>
-</div>
 
 <!-- Settings Panel -->
 <div id="settings-panel" style="display: none;">
@@ -132,5 +132,21 @@
 <canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
 
 <script src="game.js" defer></script>
+
+
+
+<!-- Leaderboard Popup -->
+<div id="leaderboard-popup" class="popup-overlay" style="display: none;">
+  <div class="popup-content">
+    <h2>🏆 Top Players</h2>
+    <div id="leaderboardList" class="leaderboard"></div>
+    <button onclick="closeLeaderboard()">❌ Close</button>
+  </div>
+</div>
+
+
+
+
+
 </body>
 </html>
