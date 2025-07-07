@@ -19,6 +19,12 @@ const winningCombos = [
 ];
 
 function startGame() {
+  event.preventDefault(); // Prevent form submission  
+  const form = document.getElementById("gameForm");
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
   localStorage.removeItem("gameState");
 
   try {
@@ -36,22 +42,22 @@ function startGame() {
     document.body.classList.remove("theme-classic", "theme-neon", "theme-wood", "theme-clear");
     document.body.classList.add(`theme-${boardTheme}`);
 
-   // No round increment here, moved to game end
-const category = mode === "PvP" ? "PvP" : "PvC";
-// Only update leaderboard structure if not already present
-const player1 = getName("X");
-let player1Entry = leaderboard[category].find(p => p.name === player1);
-if (!player1Entry) {
-  leaderboard[category].push({ name: player1, wins: 0, rounds: 0 });
-}
-if (mode === "PvP") {
-  const player2 = getName("O");
-  let player2Entry = leaderboard[category].find(p => p.name === player2);
-  if (!player2Entry) {
-    leaderboard[category].push({ name: player2, wins: 0, rounds: 0 });
+     // No round increment here, moved to game end
+  const category = mode === "PvP" ? "PvP" : "PvC";
+  // Only update leaderboard structure if not already present
+  const player1 = getName("X");
+  let player1Entry = leaderboard[category].find(p => p.name === player1);
+  if (!player1Entry) {
+    leaderboard[category].push({ name: player1, wins: 0, rounds: 0 });
   }
-}
-localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+  if (mode === "PvP") {
+    const player2 = getName("O");
+    let player2Entry = leaderboard[category].find(p => p.name === player2);
+    if (!player2Entry) {
+      leaderboard[category].push({ name: player2, wins: 0, rounds: 0 });
+    }
+  }
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
 
     // Show game screen and reset game
     showScreen("game-section");
@@ -200,7 +206,6 @@ function aiMove() {
   }
 }
 
-
 function getBestMove() {
   const cells = [...document.querySelectorAll(".cell")];
   const board = cells.map(c => c.dataset.player || "");
@@ -279,18 +284,12 @@ function pauseGame() {
   document.getElementById("pause-popup").style.display = "flex";
 }
 
-
-
-
 function resumeGame() {
   console.log("▶ Resuming game...");
   gamePaused = false;
   document.getElementById("pause-popup").style.display = "none";
   countdown(); // Resume countdown from where it left
 }
-
-
-
 
 function restartTimer() {
   clearTimeout(timer);
@@ -474,8 +473,30 @@ function updateLeaderboard() {
 
     list.appendChild(pvcTable);
   }
+    leaderboardUpdatePending = false;
+}
 
-  leaderboardUpdatePending = false;
+//the function for show more and less
+function toggleTutorial(event) {
+  event.preventDefault(); // Prevent default link behavior
+  const tutorial = document.querySelector('#how-to-play .tutorial');
+  const showMore = document.querySelector('#how-to-play .show-more');
+  if (tutorial.style.display === 'none') {
+    tutorial.style.display = 'block';
+    showMore.textContent = 'Show Less';
+  } else {
+    tutorial.style.display = 'none';
+    showMore.textContent = 'Show More';
+  }
+}
+
+function openTutorial(event) {
+  event.preventDefault(); // Prevent default link behavior
+  const youtubeLink = document.getElementById('youtube-link');
+  // Replace with your YouTube tutorial URL
+  youtubeLink.href = 'https://youtu.be/iEW-d02l9ew?feature=shared'; // URL of the YouTube tutorial
+  // Open the link in a new tab
+  window.open(youtubeLink.href, '_blank'); // Open in new tab
 }
 // Confetti
 const confettiCanvas = document.getElementById("confetti-canvas");
@@ -522,28 +543,11 @@ function clearConfetti() {
   ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
 }
 
-// // Splash → Intro
-// window.addEventListener("load", () => {
-//   const splash = document.getElementById("splash-screen");
-//   const intro = document.getElementById("intro-screen");
-//   const video = document.getElementById("splash-video");
-
-//   function goToIntroScreen() {
-//     splash.style.opacity = 0;
-//     setTimeout(() => {
-//       splash.style.display = "none";
-//       intro.style.display = "block";
-//     }, 1000);
-//   }
-
-//   if (video) video.addEventListener("ended", goToIntroScreen);
-//   setTimeout(goToIntroScreen, 7000);
-// });
-// game.js
-document.addEventListener("DOMContentLoaded", () => {
+// Splash → Intro
+window.addEventListener("load", () => {
   const splash = document.getElementById("splash-screen");
   const intro = document.getElementById("intro-screen");
-  const video = document.getElementById("splash-video");
+  const video = document.getElementById("splash-vi
   const typewriter = document.getElementById("typewriter");
   const textToType = "🎮 Welcome to Tic Tac Toe 🎮";
   let typeIndex = 0;
@@ -572,8 +576,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateLeaderboard();
   }, 1000);
 }
-
-
   // Start typewriter effect
   if (typewriter) {
     typeWriter();
@@ -597,8 +599,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(goToIntroScreen, 10500); // Fallback if no video
   }
 });
-// Fallback to intro screen after 7 seconds (or adjust based on typing duration)
-  
 
 // ✅ Screen switching utility
 function showScreen(id) {
