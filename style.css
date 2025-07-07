@@ -70,15 +70,17 @@ button:hover {
 }
 .screen.active {
   display: flex;
+  position: relative; /* Ensure it stays on top */
 }
 
 #intro-screen.active,
 #game-section.active,
-#how-to-play.active,
+#how-to-play.active ,
 #leaderboard-screen.active,
 #pause-screen.active {
   display: flex;
 }
+
 #intro-screen {
   display: flex;
   flex-direction: column;
@@ -106,6 +108,22 @@ button:hover {
   overflow: hidden;
   transition: opacity 1s ease;
 }
+/* Typewriter effect */
+#typewriter {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);/*responsive font size*/
+  color: #00ffff; /* Cyan for vibrancy */
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden; /* Hide text until typed */
+  border-right: 3px solid #00ffff; /* Blinking cursor */
+  animation: blink-caret 0.75s step-end infinite;
+}
+/* Blinking cursor animation */
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: #00ffff; }
+}
+
 
 #splash-screen video {
   position: absolute;
