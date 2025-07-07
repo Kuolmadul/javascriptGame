@@ -21,54 +21,56 @@
 <!-- Intro Screen -->
 <div id="intro-screen" class="screen active">
   <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>
+  <form id="gameForm" class ="input-group">
+    <div class="input-group">
+      <label style="color: white;">Player 1 Name:</label>
+      <input id="playerXName" type="text" placeholder="Name" required/>
+      <label>Emoji / Avatar:</label>
+      <select id="playerOEmoji">
+          <option value="❌">❌</option>
+          <option value="😎">😎</option>
+          <option value="🐱">🐱</option>
+          <option value="🚀">🚀</option>
+          <option value="🌟">🌟</option>
+        </select>
+    </div>
 
-  <div class="input-group">
-    <label style="color: white;">Player 1 Name:</label>
-    <input id="playerXName" type="text" placeholder="Name" />
-    <label>Emoji / Avatar:</label>
-     <select id="playerOEmoji">
-        <option value="❌">❌</option>
-        <option value="😎">😎</option>
-        <option value="🐱">🐱</option>
-        <option value="🚀">🚀</option>
-        <option value="🌟">🌟</option>
-      </select>
+    <div class="input-group">
+      <label style="color: white;">Player 2 Name:</label>
+      <input id="playerOName" type="text" placeholder="Name" required/>
+      <label>Emoji / Avatar:</label>
+        <select id="playerXEmoji">
+          <option value="⭕️">⭕️</option>
+          <option value="😀">😀</option>
+          <option value="🤖">🤖</option>
+          <option value="⭐">⭐</option>
+        </select>
+    </div>
+    <div class="input-group">
+    <label>Select Theme:</label>
+    <select id="themeSelector">
+      <option value="classic">Classic</option>
+      <option value="neon">Neon</option>
+      <option value="wood">Wood</option>
+      <option value="clear">Clear</option>
+    </select>
+    </div>
+    <div class="input-group">
+    <label>Select Mode:</label>
+    <select id="gameMode">
+      <option value="PvP">Player vs Player</option>
+      <option value="Easy">Player vs Easy AI</option>
+      <option value="Hard">Player vs Hard AI</option>
+    </select>
+    </div>
+    </form>
+    <div style="margin-top: 15px;" class="controls">
+      <button type="submit" form="gameForm" onclick="startGame(event)">▶ Start Game</button>
+    <button type="button" onclick="showScreen('how-to-play')">📘 How to Play</button>
+    <button type="button" onclick="showScreen('leaderboard-screen')">🏆 Leaderboard</button>
+    </div>
   </div>
-
-  <div class="input-group">
-    <label style="color: white;">Player 2 Name:</label>
-    <input id="playerOName" type="text" placeholder="Name" />
-    <label>Emoji / Avatar:</label>
-      <select id="playerXEmoji">
-        <option value="⭕️">⭕️</option>
-        <option value="😀">😀</option>
-        <option value="🤖">🤖</option>
-        <option value="⭐">⭐</option>
-      </select>
-  </div>
-
-
-  <label>Select Theme:</label>
-  <select id="themeSelector">
-    <option value="classic">Classic</option>
-    <option value="neon">Neon</option>
-    <option value="wood">Wood</option>
-    <option value="clear">Clear</option>
-  </select>
-
-  <label>Select Mode:</label>
-  <select id="gameMode">
-    <option value="PvP">Player vs Player</option>
-    <option value="Easy">Player vs Easy AI</option>
-    <option value="Hard">Player vs Hard AI</option>
-  </select>
-
-  <div style="margin-top: 15px;">
-    <button onclick="startGame()">▶ Start Game</button>
-    <button onclick="showHowToPlay()">📘 How to Play</button>
-    <button onclick="showLeaderboard()">🏆 Leaderboard</button>
-  </div>
-</div>
+  
 
 <!-- Game Section -->
 <div id="game-section" class="screen">
@@ -91,11 +93,19 @@
 </div>
 
 <!-- How to Play -->
-<div id="howto-screen" class="screen">
-  <h2>📘 How to Play</h2>
-  <p>Take turns placing your emoji in the grid. Get 3 in a row to win!</p>
-  <p>You can play against a friend or AI with easy or hard mode.</p>
-  <p>Use settings to switch themes or toggle sound.</p>
+<div id="how-to-play" class="screen">
+  <h2 class="title">📘 How to Play</h2>
+  <div class="help-container">
+  <div class="rules">
+    <p>Take turns placing your emoji (X or O) on the 3x3 grid. The objective is to get three of your emojis in a row—horizontally, vertically, or diagonally—to win. If the grid fills up without a winner, the game ends in a draw.</p>
+    <p>Choose between Player vs Player (local) or Player vs Computer modes. In Computer mode, the AI makes random or strategic moves. Players take turns, and the game stops when someone wins or a draw occurs.</p>
+    <p>Customize your experience with themes, sound, and dark mode via Settings.</p>
+  </div>
+  <a href="#" class="show-more" onclick="toggleTutorial(event)">Show More</a>
+  <div class="tutorial" style="display: none;">
+    <p>For a visual guide, <a href="#" id="youtube-link" onclick="openTutorial(event)">click here to view a tutorial on YouTube</a>.</p>
+  </div>
+  </div>  
   <button onclick="goHome()">🏠 Home</button>
 </div>
 
@@ -103,7 +113,7 @@
 <div id="leaderboard-screen" class="screen">
   <h2>🏆 Top Players</h2>
   <ol id="leaderboardListPage"></ol>
-  <button onclick="goHome()">🏠 Home</button>
+  <button class="home-btn" onclick="goHome()">🏠 Home</button>
 </div>
 
 <!-- Pause Screen -->

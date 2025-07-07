@@ -7,11 +7,15 @@ body {
   margin: 0;
   padding: 20px;
   color: black;
+  position: relative; /* For overlay in dark mode */
+  background-color: rgba(0, 0, 0, 0); /* Base color for blend */
 }
 
 body.dark {
-  background: #1e1e1e;
   color: white;
+  background-blend-mode: multiply; /* Blends with overlay */
+  background-color: rgba(0, 0, 0, 0.5); /* Dark overlay to reduce opacity */
+  background-image: url("dark.jpeg");
 }
 
 body.dark input, body.dark select {
@@ -61,14 +65,30 @@ button:hover {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  
 }
 
 #intro-screen.active,
 #game-section.active,
-#howto-screen.active,
+#how-to-play.active,
 #leaderboard-screen.active,
 #pause-screen.active {
   display: flex;
+}
+#intro-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 800px;
+  margin: 50px auto 0;
+  padding: 20px;
+    
+}
+#intro-screen h1 {
+  margin-bottom: 20px; /*  space below title */
+  font-size: clamp(2rem, 6vw, 3rem); /* Larger, responsive title */
 }
 
 /* === Splash Screen === */
@@ -215,6 +235,141 @@ body.dark .cell {
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
   z-index: 999;
 }
+/* Rules and Tutorial Styles */
+.rules {
+  max-width: 600px;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.show-more {
+  color: #00bfff; /* Matches game button hover color */
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 1em;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.show-more:hover {
+  color: #f0ad4e; /* Subtle hover effect */
+}
+
+.tutorial {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 5px;
+}
+
+.tutorial a {
+  color: #00bfff;
+  text-decoration: underline;
+}
+
+.tutorial a:hover {
+  color: #f0ad4e;
+}
+/* How to Play Styles */
+.title {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.help-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: rgba(198, 193, 193, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.rules {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.show-more {
+  color: #00bfff;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 1em;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.show-more:hover {
+  color: #f0ad4e;
+}
+
+.tutorial {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 5px;
+}
+
+.tutorial a {
+  color: #00bfff;
+  text-decoration: underline;
+}
+
+.tutorial a:hover {
+  color: #f0ad4e;
+}
+
+.home-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1em;
+  border-radius: 8px;
+  background-color: #f07b1c;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.home-btn:hover {
+  background-color: yellow;
+  color: black;
+  transform: scale(1.05);
+  box-shadow: 0 0 12px 4px blue;
+}
+/* Ensure responsiveness */
+@media (max-width: 600px) {
+  .rules {
+    max-width: 90%;
+  }
+  .tutorial {
+    padding: 5px;
+  }
+  .help-container {
+    max-width: 90%;
+    padding: 15px;
+  }
+  .title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+  .home-btn {
+    padding: 8px 15px;
+  }
+  #intro-screen {
+    margin-top: 30px; /* Reduced top margin on mobile */
+    padding: 10px;
+  }
+}
+body.dark .help-container {
+  background-color: rgba(50, 50, 50, 0.9);
+  color: #fff;
+}
+
+body.dark .title {
+  color: #fff;
+}
+
 
 body.dark #settings-panel {
   background: #333;

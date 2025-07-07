@@ -15,11 +15,12 @@ const winningCombos = [
 ];
 
 function startGame() {
-  // const form = document.getElementById("gameForm");
-  // if (!form.checkValidity()) {
-  //   form.reportValidity();
-  //   return;
-  // }
+  event.preventDefault(); // Prevent form submission  
+  const form = document.getElementById("gameForm");
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
   currentPlayer = "X";
   gameActive = true;
   mode = document.getElementById("gameMode").value;
@@ -264,6 +265,28 @@ function updateLeaderboard() {
       l.appendChild(li);
     });
   });
+}
+//the function for show more and less
+function toggleTutorial(event) {
+  event.preventDefault(); // Prevent default link behavior
+  const tutorial = document.querySelector('#how-to-play .tutorial');
+  const showMore = document.querySelector('#how-to-play .show-more');
+  if (tutorial.style.display === 'none') {
+    tutorial.style.display = 'block';
+    showMore.textContent = 'Show Less';
+  } else {
+    tutorial.style.display = 'none';
+    showMore.textContent = 'Show More';
+  }
+}
+
+function openTutorial(event) {
+  event.preventDefault(); // Prevent default link behavior
+  const youtubeLink = document.getElementById('youtube-link');
+  // Replace with your YouTube tutorial URL
+  youtubeLink.href = 'https://youtu.be/iEW-d02l9ew?feature=shared'; // URL of the YouTube tutorial
+  // Open the link in a new tab
+  window.open(youtubeLink.href, '_blank'); // Open in new tab
 }
 
 // Confetti
