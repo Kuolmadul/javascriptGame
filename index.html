@@ -15,8 +15,24 @@
   </video>
   <div class="overlay"><h1 id="typewriter" aria-live="polite"></h1></div>
 </div>
+<!-- How to Play -->
+<div id="how-to-play" class="screen">
+  <h2 class="title">📘 How to Play</h2>
+  <div class="help-container">
+  <div class="rules">
+    <p>Take turns placing your emoji (X or O) on the 3x3 grid. The objective is to get three of your emojis in a row—horizontally, vertically, or diagonally—to win. If the grid fills up without a winner, the game ends in a draw.</p>
+    <p>Choose between Player vs Player (local) or Player vs Computer modes. In Computer mode, the AI makes random or strategic moves. Players take turns, and the game stops when someone wins or a draw occurs.</p>
+    <p>Customize your experience with themes, sound, and dark mode via Settings.</p>
+  </div>
+  <a href="#" class="show-more" onclick="toggleTutorial(event)">Show More</a>
+  <div class="tutorial" style="display: none;">
+    <p>For a visual guide, <a href="#" id="youtube-link" onclick="openTutorial(event)">click here to view a tutorial on YouTube</a>.</p>
+  </div>
+  </div>  
+  <button onclick="goHome()">🏠 Home</button>
+</div>
 <!-- Intro Screen -->
-<div id="intro-screen" class="active">
+<div id="intro-screen" class="screen" class="active">
   <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>  
   <form id="gameForm" class ="input-group">
     <div class="input-group">
@@ -88,22 +104,7 @@
     <button onclick="goHome()">🏠 Home</button>
   </div>
 </div>
-<!-- How to Play -->
-<div id="how-to-play" class="screen">
-  <h2 class="title">📘 How to Play</h2>
-  <div class="help-container">
-  <div class="rules">
-    <p>Take turns placing your emoji (X or O) on the 3x3 grid. The objective is to get three of your emojis in a row—horizontally, vertically, or diagonally—to win. If the grid fills up without a winner, the game ends in a draw.</p>
-    <p>Choose between Player vs Player (local) or Player vs Computer modes. In Computer mode, the AI makes random or strategic moves. Players take turns, and the game stops when someone wins or a draw occurs.</p>
-    <p>Customize your experience with themes, sound, and dark mode via Settings.</p>
-  </div>
-  <a href="#" class="show-more" onclick="toggleTutorial(event)">Show More</a>
-  <div class="tutorial" style="display: none;">
-    <p>For a visual guide, <a href="#" id="youtube-link" onclick="openTutorial(event)">click here to view a tutorial on YouTube</a>.</p>
-  </div>
-  </div>  
-  <button onclick="goHome()">🏠 Home</button>
-</div>
+
 <!-- Pause Popup -->
 <div id="pause-popup" class="popup-overlay">
   <div class="popup-content">
