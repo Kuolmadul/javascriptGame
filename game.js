@@ -547,7 +547,7 @@ function clearConfetti() {
 window.addEventListener("load", () => {
   const splash = document.getElementById("splash-screen");
   const intro = document.getElementById("intro-screen");
-  const video = document.getElementById("splash-vi
+  const video = document.getElementById("splash-video");
   const typewriter = document.getElementById("typewriter");
   const textToType = "🎮 Welcome to Tic Tac Toe 🎮";
   let typeIndex = 0;
