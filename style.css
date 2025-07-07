@@ -16,9 +16,10 @@ body.dark {
   background-blend-mode: multiply; /* Blends with overlay */
   background-color: rgba(0, 0, 0, 0.5); /* Dark overlay to reduce opacity */
   background-image: url("dark.jpeg");
+  
 }
 
-body.dark input, body.dark select {
+body.dark input,body.dark select {
   background: #333;
   color: white;
 }
