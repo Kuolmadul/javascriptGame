@@ -8,7 +8,6 @@
   <link rel="icon" href="t3.jpg" />
 </head>
 <body>
-
 <!-- Splash Screen -->
 <div id="splash-screen">
   <video id="splash-video" autoplay muted playsinline>
@@ -16,10 +15,9 @@
   </video>
   <div class="overlay"><h1>🎮 Welcome to Tic Tac Toe 🎮</h1></div>
 </div>
-
 <!-- Intro Screen -->
 <div id="intro-screen" class="screen active">
-  <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>
+  <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>  
   <form id="gameForm" class ="input-group">
     <div class="input-group">
       <label style="color: white;">Player 1 Name:</label>
@@ -33,7 +31,6 @@
           <option value="🌟">🌟</option>
         </select>
     </div>
-
     <div class="input-group">
       <label style="color: white;">Player 2 Name:</label>
       <input id="playerOName" type="text" placeholder="Name" required/>
@@ -66,10 +63,8 @@
     <div style="margin-top: 15px;" class="controls">
       <button type="submit" form="gameForm" onclick="startGame(event)">▶ Start Game</button>
     <button type="button" onclick="showScreen('how-to-play')">📘 How to Play</button>
-    <button type="button" onclick="showScreen('leaderboard-screen')">🏆 Leaderboard</button>
     </div>
-  </div>
-  
+  </div> 
 
 <!-- Game Section -->
 <div id="game-section" class="screen">
@@ -84,13 +79,15 @@
     <button onclick="goHome()">🏠 Home</button>
     <button onclick="openSettings()">⚙ Settings</button>
   </div>
-
-  <div id="dashboard">
-    <h3>🏆 Leaderboard (Top 5)</h3>
-    <ol id="leaderboardList"></ol>
+  <!-- Game Over Popup -->
+<div id="game-over-popup" class="popup-overlay">
+  <div class="popup-content">
+    <h2>🎉 Game Over</h2>
+    <button onclick="resetGame()">🔁 New Game</button>
+    <button onclick="showLeaderboard()">🏆 View Leaderboard</button>
+    <button onclick="goHome()">🏠 Home</button>
   </div>
 </div>
-
 <!-- How to Play -->
 <div id="how-to-play" class="screen">
   <h2 class="title">📘 How to Play</h2>
@@ -107,22 +104,15 @@
   </div>  
   <button onclick="goHome()">🏠 Home</button>
 </div>
-
-<!-- Leaderboard Screen -->
-<div id="leaderboard-screen" class="screen">
-  <h2>🏆 Top Players</h2>
-  <ol id="leaderboardListPage"></ol>
-  <button class="home-btn" onclick="goHome()">🏠 Home</button>
+<!-- Pause Popup -->
+<div id="pause-popup" class="popup-overlay">
+  <div class="popup-content">
+    <h2>⏸ Game Paused</h2>
+    <button onclick="resumeGame()">▶ Resume</button>
+    <button onclick="resetGame()">🔁 Restart</button>
+    <button onclick="goHome()">🏠 Home</button>
+  </div>
 </div>
-
-<!-- Pause Screen -->
-<div id="pause-screen" class="screen">
-  <h2>⏸ Game Paused</h2>
-  <button onclick="resumeGame()">▶ Resume</button>
-  <button onclick="resetGame()">🔁 Restart</button>
-  <button onclick="goHome()">🏠 Home</button>
-</div>
-
 <!-- Settings Panel -->
 <div id="settings-panel" style="display: none;">
   <h3>⚙ Game Settings</h3>
@@ -131,7 +121,6 @@
   <button onclick="resetStats()">🧹 Reset Stats</button>
   <button onclick="closeSettings()">❌ Close Settings</button>
 </div>
-
 <!-- Sounds -->
 <audio id="clickSound" src="https://www.fesliyanstudios.com/play-mp3/387"></audio>
 <audio id="winSound" src="https://www.fesliyanstudios.com/play-mp3/438"></audio>
@@ -141,5 +130,13 @@
 <canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
 
 <script src="game.js" defer></script>
+<!-- Leaderboard Popup -->
+<div id="leaderboard-popup" class="popup-overlay" style="display: none;">
+  <div class="popup-content">
+    <h2>🏆 Top Players</h2>
+    <div id="leaderboardList" class="leaderboard"></div>
+    <button onclick="closeLeaderboard()">❌ Close</button>
+  </div>
+</div>
 </body>
 </html>
