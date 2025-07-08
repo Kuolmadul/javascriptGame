@@ -20,6 +20,8 @@ const winningCombos = [
 
 function startGame() {
   event.preventDefault(); // Prevent form submission  
+  totalRounds = parseInt(document.getElementById("rounds").value) || 1;
+  roundsPlayed = 0;
   const form = document.getElementById("gameForm");
   if (!form.checkValidity()) {
     form.reportValidity();
@@ -156,7 +158,15 @@ if (checkWin(currentPlayer)) {
   leaderboard[category] = leaderboard[category].slice(0, 5);
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
   updateLeaderboard();
-  document.getElementById("game-over-popup").style.display = "flex";
+  roundsPlayed++;
+  if (roundsPlayed >= totalRounds) {
+    document.getElementById("game-over-popup").style.display = "flex";
+    triggerConfetti();
+  } else {
+    setTimeout(() => {
+      resetGame();
+    }, 1200);
+  }
   triggerConfetti();
   return;
 }
@@ -171,6 +181,8 @@ if (isDraw()) {
   const playerOName = getName("O");
   const playerXEmoji = getEmoji("X");
   const playerOEmoji = getEmoji("O");
+  let totalRounds = 1;
+  let roundsPlayed = 0;
   const boardState = [...document.querySelectorAll('.cell')].map(cell => ({
     text: cell.textContent,
     player: cell.dataset.player || ""
@@ -201,7 +213,15 @@ if (isDraw()) {
   leaderboard[category] = leaderboard[category].slice(0, 5);
   localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
   updateLeaderboard();
-  document.getElementById("game-over-popup").style.display = "flex";
+  roundsPlayed++;
+  if (roundsPlayed >= totalRounds) {
+    document.getElementById("game-over-popup").style.display = "flex";
+    triggerConfetti();
+  } else {
+    setTimeout(() => {
+      resetGame();
+    }, 1200);
+  }
   return;
 }
   currentPlayer = currentPlayer === "X" ? "O" : "X";
@@ -692,6 +712,11 @@ function showPlayerRounds(category, playerIdx) {
 
 // Replay a round by showing the board state
 function replayRound(round) {
+  //remove the popups 
+  document.getElementById("game-over-popup").style.display = "none";
+  document.getElementById("leaderboard-popup").classList.remove("active");
+  document.getElementById("rounds-modal").style.display = "none";
+
   // Show the game section
   showScreen('game-section');
   createBoard();
@@ -722,6 +747,7 @@ function replayRound(round) {
         break;
       }
     }
+
   }
 
   // --- Controls UI ---
@@ -794,6 +820,7 @@ function replayRound(round) {
     controls.remove();
     // Optionally, return to leaderboard or home
     updateStatus('Replay exited.');
+    resetGame();
   };
   controls.appendChild(exitBtn);
 
