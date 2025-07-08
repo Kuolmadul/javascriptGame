@@ -463,12 +463,52 @@ body.dark #leaderboard-screen {
   width: 100vw;
   height: 100vh;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   background-color: rgba(0, 0, 0, 0.8);
   z-index: 99999 !important;
+  overflow-y: auto;
+}
+
+/* Make leaderboard popup content scrollable */
+#leaderboard-popup .popup-content, #leaderboard-popup .leaderboard {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Scrollable leaderboard list if present */
+#leaderboardList {
+  max-height: 65vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+/* Style for rounds modal (injected by JS) */
+#rounds-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto !important;
+}
+#rounds-modal > div {
+  background: #fff;
+  margin-top: 40px;
+  border-radius: 10px;
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+  min-width: 300px;
+}
+#rounds-modal button {
+  margin: 5px 0;
 }
 
 #leaderboard-popup.active {
   display: flex !important;
 }
-

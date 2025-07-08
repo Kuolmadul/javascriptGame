@@ -32,55 +32,59 @@
   <button onclick="goHome()">🏠 Home</button>
 </div>
 <!-- Intro Screen -->
-<div id="intro-screen" class="screen" class="active">
-  <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>  
-  <form id="gameForm" class ="input-group">
+<div id="intro-screen" class="screen active">
+  <h1 style="color: #00ffff;">🎮 Ultimate Tic Tac Toe</h1>
+  <form id="gameForm" class="input-group">
     <div class="input-group">
-      <label style="color: white;">Player 1 Name:</label>
-      <input id="playerXName" type="text" placeholder="Name" required/>
-      <label>Emoji / Avatar:</label>
+      <label for="playerXName" style="color: white;">Player 1 Name:</label>
+      <input type="text" id="playerXName" placeholder="Player 1" required>
+      <label for="playerXEmoji">Emoji / Avatar:</label>
       <select id="playerXEmoji">
-          <option value="❌">❌</option>
-          <option value="😎">😎</option>
-          <option value="🐱">🐱</option>
-          <option value="🚀">🚀</option>
-          <option value="🌟">🌟</option>
-        </select>
+        <option value="❌">❌</option>
+        <option value="😎">😎</option>
+        <option value="🐱">🐱</option>
+        <option value="🚀">🚀</option>
+        <option value="🌟">🌟</option>
+      </select>
     </div>
     <div class="input-group">
-      <label style="color: white;">Player 2 Name:</label>
-      <input id="playerOName" type="text" placeholder="Name" required/>
-      <label>Emoji / Avatar:</label>
-        <select id="playerOEmoji">
-          <option value="⭕️">⭕️</option>
-          <option value="😀">😀</option>
-          <option value="🤖">🤖</option>
-          <option value="⭐">⭐</option>
-        </select>
+      <label for="playerOName" style="color: white;">Player 2 Name:</label>
+      <input type="text" id="playerOName" placeholder="Player 2" required>
+      <label for="playerOEmoji">Emoji / Avatar:</label>
+      <select id="playerOEmoji">
+        <option value="⭕️">⭕️</option>
+        <option value="😀">😀</option>
+        <option value="🤖">🤖</option>
+        <option value="⭐">⭐</option>
+      </select>
     </div>
     <div class="input-group">
-    <label>Select Theme:</label>
-    <select id="themeSelector">
-      <option value="classic">Classic</option>
-      <option value="neon">Neon</option>
-      <option value="wood">Wood</option>
-      <option value="clear">Clear</option>
-    </select>
+      <label for="themeSelector">Select Theme:</label>
+      <select id="themeSelector">
+        <option value="classic">Classic</option>
+        <option value="neon">Neon</option>
+        <option value="wood">Wood</option>
+        <option value="clear">Clear</option>
+      </select>
     </div>
     <div class="input-group">
-    <label>Select Mode:</label>
-    <select id="gameMode">
-      <option value="PvP">Player vs Player</option>
-      <option value="Easy">Player vs Easy AI</option>
-      <option value="Hard">Player vs Hard AI</option>
-    </select>
+      <label for="gameMode">Select Mode:</label>
+      <select id="gameMode" onchange="updateTimerByMode()">
+        <option value="PvP">Player vs Player</option>
+        <option value="Easy">Player vs Easy AI</option>
+        <option value="Hard">Player vs Hard AI</option>
+      </select>
     </div>
-    </form>
+    <div class="input-group">
+      <label for="rounds">Number of Rounds (max 5):</label>
+      <input type="number" id="rounds" name="rounds" min="1" max="5" value="1" required>
+    </div>
     <div style="margin-top: 15px;" class="controls">
       <button type="submit" form="gameForm" onclick="startGame(event)">▶ Start Game</button>
-    <button type="button" onclick="showScreen('how-to-play')">📘 How to Play</button>
+      <button type="button" onclick="showScreen('how-to-play')">📘 How to Play</button>
     </div>
-  </div> 
+  </form>
+</div>
 
 <!-- Game Section -->
 <div id="game-section" class="screen">
@@ -130,13 +134,45 @@
 <canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
 
 <script src="game.js" defer></script>
+<script>
+// Update timer display based on selected mode
+function updateTimerByMode() {
+  var mode = document.getElementById('gameMode').value;
+  var timer = document.getElementById('timer');
+  if (!timer) return;
+  if (mode === 'Hard') {
+    timer.textContent = '⏱️ 15';
+  } else {
+    timer.textContent = '⏱️ 10';
+  }
+}
+
+// Show the leaderboard popup and load previous games if available
+function showLeaderboard() {
+  var popup = document.getElementById('leaderboard-popup');
+  if (popup) popup.style.display = 'block';
+  // Optionally, load previous games from localStorage or other storage here
+  if (typeof loadLeaderboard === 'function') {
+    loadLeaderboard();
+  }
+}
+
+// Hide the leaderboard popup
+function closeLeaderboard() {
+  var popup = document.getElementById('leaderboard-popup');
+  if (popup) popup.style.display = 'none';
+}
+</script>
 <!-- Leaderboard Popup -->
 <div id="leaderboard-popup" class="popup-overlay" style="display: none;">
   <div class="popup-content">
     <h2>🏆 Top Players</h2>
     <div id="leaderboardList" class="leaderboard"></div>
+    <!-- Modal for viewing rounds will be injected here by JS -->
     <button onclick="closeLeaderboard()">❌ Close</button>
   </div>
 </div>
 </body>
 </html>
+
+
